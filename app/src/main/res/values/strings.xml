@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MyTV</string>
+
+    <string name="title_activity_main">TV Show</string>
+
+    <string name="others_group">Others</string>
+
+    <string name="play_error">Play Error</string>
+</resources>
