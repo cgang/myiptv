@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <EditTextPreference
+        android:key="PlaylistUrl"
+        android:title="@string/playlist_url"
+        app:useSimpleSummaryProvider="true"
+        android:defaultValue="http://openwrt.lan/iptv.m3u"/>
+    <EditTextPreference
+        android:key="EPGUrl"
+        android:title="@string/epg_url"
+        app:useSimpleSummaryProvider="true"
+        android:defaultValue="http://openwrt.lan/epg"/>
+</PreferenceScreen>

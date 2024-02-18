@@ -81,19 +81,14 @@ class PlaylistProvider {
         }
     }
 
-    fun download(listUrl: String): Boolean {
-        return try {
-            val url = URL(listUrl)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.connectTimeout = 500
-            conn.inputStream.use { input ->
-                val parser = M3UParser()
-                update(parser.parse(InputStreamReader(input)))
-            }
-            true
-        } catch (e: IOException) {
-            Log.w(TAG, "Failed to download list: " + e.message)
-            false
+    @Throws(IOException::class)
+    fun download(listUrl: String) {
+        val url = URL(listUrl)
+        val conn = url.openConnection() as HttpURLConnection
+        conn.connectTimeout = 500
+        conn.inputStream.use { input ->
+            val parser = M3UParser()
+            update(parser.parse(InputStreamReader(input)))
         }
     }
 

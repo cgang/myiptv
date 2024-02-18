@@ -207,6 +207,5 @@ open class PlaybackFragment :
 
     companion object {
         val TAG = PlaybackFragment::class.java.simpleName
-        const val LAST_URL = "LastPlayingUrl"
     }
 }

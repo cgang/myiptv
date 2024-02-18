@@ -8,4 +8,8 @@
     <string name="play_error">Play Error</string>
 
     <string name="no_data">No Data</string>
+    <string name="playlist_url">Playlist URL</string>
+    <string name="epg_url">EPG URL</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
 </resources>

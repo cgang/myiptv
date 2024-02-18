@@ -10,22 +10,37 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.ListFragment
+import java.io.IOException
 
 class PlaylistFragment : ListFragment() {
+    private var playlistUrl: String? = null
     private var playlistSource = PlaylistProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        reloadPlaylist()
+
         val context = requireContext()
         val channelAdapter = PlaylistAdapter(context, R.layout.list_item)
-
-        Thread {
-            if (playlistSource.download(PLAYLIST_URL)) {
-                updatePlaylist()
-            }
-        }.start()
         super.setListAdapter(channelAdapter)
+    }
+
+    fun reloadPlaylist() {
+        val activity = activity
+        if (activity is MainActivity) {
+            val listUrl = activity.preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)
+            if (listUrl == null || listUrl == playlistUrl) {
+                return
+            }
+
+            playlistUrl = listUrl
+            Thread {
+                updatePlaylist()
+            }.start()
+        } else {
+            Log.w(TAG, "activity not found")
+        }
     }
 
     override fun onAttach(context: Context) {
@@ -82,6 +97,15 @@ class PlaylistFragment : ListFragment() {
     }
 
     private fun updatePlaylist() {
+        val listUrl = playlistUrl ?: DEFAULT_PLAYLIST_URL
+        try {
+            playlistSource.download(listUrl)
+            Log.d(TAG, "playlist downloaded successfully")
+        } catch (e: IOException) {
+            Log.w(TAG, "Failed to download list: ${e}")
+            return
+        }
+
         val activity = activity
         val adapter = listAdapter
         if (activity is MainActivity && adapter is PlaylistAdapter) {
@@ -109,7 +133,5 @@ class PlaylistFragment : ListFragment() {
 
     companion object {
         private val TAG = PlaylistFragment::class.java.simpleName
-        const val PLAYLIST = "PLAYLIST"
-        const val PLAYLIST_URL = "http://openwrt.lan/iptv.m3u"
     }
 }

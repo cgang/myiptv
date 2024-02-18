@@ -1,20 +1,45 @@
 package com.github.cgang.myiptv
 
+import android.app.Activity
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.preference.PreferenceManager
 
 /**
  * The base activity for playback.
  */
 open class MainActivity : AppCompatActivity() {
+    lateinit var preferences : SharedPreferences
+    private lateinit var changeSettings : ActivityResultLauncher<Intent>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onCreate()")
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.main_activity)
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.channel_container, PlaylistFragment())
+            .commit()
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        changeSettings = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            onPreferenceChanged()
+        }
+    }
+
     private fun hideSystemUI() {
         val decorView = window.decorView
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -89,15 +114,18 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d(TAG, "onCreate()")
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.main_activity)
-        supportFragmentManager
-            .beginTransaction()
-            .add(R.id.channel_container, PlaylistFragment())
-            .commit()
-        // new Thread(new SelfUpdater(this)).start();
+    private fun showConfig() {
+        val intent = Intent(this, SettingsActivity::class.java)
+        changeSettings.launch(intent)
+    }
+
+    private fun onPreferenceChanged() {
+        val listUrl = preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)
+        Log.d(TAG, "playlist URL changed to: ${listUrl}")
+        val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
+        if (frag is PlaylistFragment) {
+            frag.reloadPlaylist()
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -110,43 +138,45 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        Log.d(TAG, "dispatchKeyEvent($event)")
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        Log.d(TAG, "onKeyUp($keyCode)")
         val controlsLayout = findViewById<FrameLayout>(R.id.channel_container)
         if (controlsLayout.visibility == View.VISIBLE) {
-            when (event.keyCode) {
+            return when (keyCode) {
                 KeyEvent.KEYCODE_BACK -> {
-                    if (event.action == KeyEvent.ACTION_UP) {
-                        hideControls()
-                    }
+                    hideControls()
                     return true
                 }
 
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    if (event.action == KeyEvent.ACTION_UP) {
-                        switchList(false)
-                    }
+                    switchList(false)
                     return true
                 }
 
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    if (event.action == KeyEvent.ACTION_UP) {
-                        switchList(true)
-                    }
+                    switchList(true)
                     return true
                 }
+
+                else -> super.onKeyUp(keyCode, event)
             }
-            return super.dispatchKeyEvent(event)
+
         }
 
-        return if (event.keyCode == KeyEvent.KEYCODE_DPAD_CENTER || event.keyCode == KeyEvent.KEYCODE_MENU) {
-            if (event.action == KeyEvent.ACTION_UP) {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_SETTINGS, KeyEvent.KEYCODE_MENU -> {
+                showConfig()
+                return true
+            }
+
+            KeyEvent.KEYCODE_DPAD_CENTER -> {
                 controlsLayout.visibility = View.VISIBLE
                 showControls(true)
+                return true
             }
-            true
-        } else {
-            super.dispatchKeyEvent(event)
+
+            else -> super.onKeyUp(keyCode, event)
         }
     }
 
