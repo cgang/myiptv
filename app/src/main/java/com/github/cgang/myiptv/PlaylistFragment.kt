@@ -11,32 +11,21 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.ListFragment
 
-class ControlFragment : ListFragment() {
-    private var playlistSource = PlaylistSource()
+class PlaylistFragment : ListFragment() {
+    private var playlistSource = PlaylistProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) {
-            savedInstanceState.getParcelable<PlaylistSource>(PLAYLIST)?.let {
-                this.playlistSource = it
-            }
-        }
+
         val context = requireContext()
         val channelAdapter = PlaylistAdapter(context, R.layout.list_item)
 
-        if (playlistSource.isEmpty()) {
-            Thread {
-                if (playlistSource.download(PLAYLIST_URL)) {
-                    updatePlaylist()
-                }
-            }.start()
-        }
+        Thread {
+            if (playlistSource.download(PLAYLIST_URL)) {
+                updatePlaylist()
+            }
+        }.start()
         super.setListAdapter(channelAdapter)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putParcelable(PLAYLIST, playlistSource)
-        super.onSaveInstanceState(outState)
     }
 
     override fun onAttach(context: Context) {
@@ -55,7 +44,7 @@ class ControlFragment : ListFragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        val view = inflater.inflate(R.layout.control_frag, container, false)
+        val view = inflater.inflate(R.layout.playlist, container, false)
         Log.i(TAG, "onCreateView() $view")
         return view
     }
@@ -119,7 +108,7 @@ class ControlFragment : ListFragment() {
     }
 
     companion object {
-        private val TAG = ControlFragment::class.java.simpleName
+        private val TAG = PlaylistFragment::class.java.simpleName
         const val PLAYLIST = "PLAYLIST"
         const val PLAYLIST_URL = "http://openwrt.lan/iptv.m3u"
     }

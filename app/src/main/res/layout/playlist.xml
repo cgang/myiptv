@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/group_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
+        android:background="@color/group_background"
         android:gravity="center"
         android:padding="10sp"
-        android:background="@color/group_background"
-        android:textSize="25sp"/>
+        android:textSize="25sp"
+        android:visibility="gone" />
 
     <ListView
         android:id="@android:id/list"
@@ -21,12 +21,12 @@
         android:layout_weight="1"
         android:choiceMode="singleChoice"
         android:focusable="true"
-        android:listSelector="@drawable/list_selector"/>
+        android:listSelector="@drawable/list_selector" />
 
     <TextView
         android:id="@android:id/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="No data"/>
+        android:text="@string/no_data" />
 
 </LinearLayout>

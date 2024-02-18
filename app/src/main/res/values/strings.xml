@@ -6,4 +6,6 @@
     <string name="others_group">Others</string>
 
     <string name="play_error">Play Error</string>
+
+    <string name="no_data">No Data</string>
 </resources>

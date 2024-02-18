@@ -56,7 +56,7 @@ open class MainActivity : AppCompatActivity() {
 
     private fun showControls(useGroup: Boolean) {
         val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
-        if (frag is ControlFragment) {
+        if (frag is PlaylistFragment) {
             if (useGroup) {
                 frag.useGroup(frag.getGroup())
             } else {
@@ -84,7 +84,7 @@ open class MainActivity : AppCompatActivity() {
 
     private fun switchList(forward: Boolean) {
         val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
-        if (frag is ControlFragment) {
+        if (frag is PlaylistFragment) {
             frag.switchGroup(forward)
         }
     }
@@ -95,7 +95,7 @@ open class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.channel_container, ControlFragment())
+            .add(R.id.channel_container, PlaylistFragment())
             .commit()
         // new Thread(new SelfUpdater(this)).start();
     }
