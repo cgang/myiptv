@@ -15,7 +15,7 @@
     </androidx.fragment.app.FragmentContainerView>
 
     <FrameLayout
-        android:id="@+id/channel_container"
+        android:id="@+id/playlist_fragment"
         android:background="#A0000000"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"

@@ -31,7 +31,7 @@ open class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.channel_container, PlaylistFragment())
+            .add(R.id.playlist_fragment, PlaylistFragment())
             .commit()
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
@@ -72,7 +72,7 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         Log.d(TAG, "onTouchEvent($event)")
-        val controlsLayout = findViewById<FrameLayout>(R.id.channel_container)
+        val controlsLayout = findViewById<FrameLayout>(R.id.playlist_fragment)
         if (controlsLayout.visibility == View.VISIBLE) {
             return if (event.action == MotionEvent.ACTION_UP) {
                 hideControls()
@@ -93,7 +93,7 @@ open class MainActivity : AppCompatActivity() {
 
 
     private fun showControls() {
-        val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
         if (frag is PlaylistFragment) {
             supportFragmentManager.beginTransaction()
                 .show(frag)
@@ -104,8 +104,8 @@ open class MainActivity : AppCompatActivity() {
 
     fun hideControls() {
         Log.d(TAG, "Trying to hide controls")
-        val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
-        val layout = findViewById<FrameLayout>(R.id.channel_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
+        val layout = findViewById<FrameLayout>(R.id.playlist_fragment)
         if (layout.visibility == View.VISIBLE && frag != null) {
             supportFragmentManager.beginTransaction()
                 .hide(frag)
@@ -141,7 +141,7 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d(TAG, "onKeyUp($keyCode)")
-        val controlsLayout = findViewById<FrameLayout>(R.id.channel_container)
+        val controlsLayout = findViewById<FrameLayout>(R.id.playlist_fragment)
         if (controlsLayout.visibility == View.VISIBLE) {
             return when (keyCode) {
                 KeyEvent.KEYCODE_BACK -> {
@@ -182,7 +182,7 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun updatePlaylist(playlist: Playlist) {
-        val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
+        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
         if (frag is PlaylistFragment) {
             frag.setPlaylist(playlist)
         }
