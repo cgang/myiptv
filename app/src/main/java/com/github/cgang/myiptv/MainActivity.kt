@@ -45,7 +45,10 @@ open class MainActivity : AppCompatActivity() {
         }
 
         preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)?.let {
-            viewModel.loadPlaylist(it)
+            Downloader.getPlaylist(it)
+        }
+        preferences.getString(EPG_URL, DEFAULT_EPG_URL)?.let {
+            Downloader.getEPG(it)
         }
     }
 
@@ -119,8 +122,10 @@ open class MainActivity : AppCompatActivity() {
 
     private fun onPreferenceChanged() {
         preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)?.let {
-            Log.d(TAG, "playlist URL changed to: ${it}")
-            viewModel.loadPlaylist(it)
+            Downloader.getPlaylist(it)
+        }
+        preferences.getString(EPG_URL, DEFAULT_EPG_URL)?.let {
+            Downloader.getEPG(it)
         }
     }
 
@@ -181,7 +186,6 @@ open class MainActivity : AppCompatActivity() {
         if (frag is PlaylistFragment) {
             frag.setPlaylist(playlist)
         }
-
         val channel = playlist.default ?: return
         playDefault(channel)
     }

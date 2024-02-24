@@ -1,4 +1,3 @@
 package com.github.cgang.myiptv
 
-class TvActivity : MainActivity() {
-}
+class TvActivity : MainActivity()

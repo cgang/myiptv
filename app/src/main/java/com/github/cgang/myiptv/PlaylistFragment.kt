@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.ListFragment
@@ -16,7 +17,6 @@ class PlaylistFragment : ListFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val context = requireContext()
         val channelAdapter = PlaylistAdapter(context, R.layout.list_item)
         super.setListAdapter(channelAdapter)

@@ -3,10 +3,14 @@ package com.github.cgang.myiptv
 class Channel(val name: String) {
     var group: String? = null
     var url: String? = null
+    var logoUrl: String? = null // logo url
+    var id: String? = null // channel id
 
     operator fun set(key: String?, value: String?) {
-        if ("group-title" == key && value != null) {
-            group = value.trim { it <= ' ' }
+        when (key) {
+            "tvg-id" -> id = value?.trim()
+            "tvg-logo" -> logoUrl = value?.trim()
+            "group-title" -> group = value?.trim()
         }
     }
 

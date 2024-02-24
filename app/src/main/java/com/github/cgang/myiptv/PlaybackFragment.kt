@@ -82,15 +82,12 @@ open class PlaybackFragment :
             .build()
         exoPlayer.addListener(this)
         exoPlayer.playWhenReady = true
-
-
         val playerView = rootView.findViewById<PlayerView>(R.id.player_view)
         if (hasAspectRatio(16, 9)) {
             Log.d(TAG, "TV screen aspect ratio found")
             playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
         }
         playerView.player = exoPlayer
-
         // Produces DataSource instances through which media data is loaded.
         dataSourceFactory = DefaultDataSource.Factory(context)
         // Util.getUserAgent(context, "SimpleTV")

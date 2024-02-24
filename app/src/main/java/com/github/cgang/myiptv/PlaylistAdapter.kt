@@ -8,7 +8,6 @@ class PlaylistAdapter(
     context: Context,
     @param:LayoutRes private val itemLayout: Int
 ) : ArrayAdapter<Channel>(context, itemLayout, R.id.tvName) {
-
     fun setChannels(channels: List<Channel>) {
         this.setNotifyOnChange(false)
         this.clear()
