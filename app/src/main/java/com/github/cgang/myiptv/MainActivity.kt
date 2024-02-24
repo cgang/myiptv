@@ -1,6 +1,5 @@
 package com.github.cgang.myiptv
 
-import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -9,9 +8,9 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,8 +21,9 @@ import androidx.preference.PreferenceManager
  * The base activity for playback.
  */
 open class MainActivity : AppCompatActivity() {
-    lateinit var preferences : SharedPreferences
-    private lateinit var changeSettings : ActivityResultLauncher<Intent>
+    lateinit var preferences: SharedPreferences
+    private lateinit var changeSettings: ActivityResultLauncher<Intent>
+    private val viewModel: PlaylistViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -35,8 +35,17 @@ open class MainActivity : AppCompatActivity() {
             .commit()
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        changeSettings = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            onPreferenceChanged()
+        changeSettings =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                onPreferenceChanged()
+            }
+
+        viewModel.getPlaylist().observe(this) {
+            updatePlaylist(it)
+        }
+
+        preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)?.let {
+            viewModel.loadPlaylist(it)
         }
     }
 
@@ -70,8 +79,9 @@ open class MainActivity : AppCompatActivity() {
             }
         }
         return if (event.action == MotionEvent.ACTION_UP) {
+            viewModel.setGroup("") // disable group
             controlsLayout.visibility = View.VISIBLE
-            showControls(false)
+            showControls()
             true
         } else {
             super.onTouchEvent(event)
@@ -79,14 +89,9 @@ open class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun showControls(useGroup: Boolean) {
+    private fun showControls() {
         val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
         if (frag is PlaylistFragment) {
-            if (useGroup) {
-                frag.useGroup(frag.getGroup())
-            } else {
-                frag.useGroup("") // disable group
-            }
             supportFragmentManager.beginTransaction()
                 .show(frag)
                 .commit()
@@ -107,24 +112,15 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun switchList(forward: Boolean) {
-        val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
-        if (frag is PlaylistFragment) {
-            frag.switchGroup(forward)
-        }
-    }
-
     private fun showConfig() {
         val intent = Intent(this, SettingsActivity::class.java)
         changeSettings.launch(intent)
     }
 
     private fun onPreferenceChanged() {
-        val listUrl = preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)
-        Log.d(TAG, "playlist URL changed to: ${listUrl}")
-        val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
-        if (frag is PlaylistFragment) {
-            frag.reloadPlaylist()
+        preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)?.let {
+            Log.d(TAG, "playlist URL changed to: ${it}")
+            viewModel.loadPlaylist(it)
         }
     }
 
@@ -138,7 +134,6 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d(TAG, "onKeyUp($keyCode)")
         val controlsLayout = findViewById<FrameLayout>(R.id.channel_container)
@@ -150,12 +145,12 @@ open class MainActivity : AppCompatActivity() {
                 }
 
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    switchList(false)
+                    viewModel.switchGroup(false)
                     return true
                 }
 
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    switchList(true)
+                    viewModel.switchGroup(true)
                     return true
                 }
 
@@ -171,8 +166,9 @@ open class MainActivity : AppCompatActivity() {
             }
 
             KeyEvent.KEYCODE_DPAD_CENTER -> {
+                viewModel.resetGroup()
                 controlsLayout.visibility = View.VISIBLE
-                showControls(true)
+                showControls()
                 return true
             }
 
@@ -180,7 +176,17 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun playDefault(channel: Channel?) {
+    private fun updatePlaylist(playlist: Playlist) {
+        val frag = supportFragmentManager.findFragmentById(R.id.channel_container)
+        if (frag is PlaylistFragment) {
+            frag.setPlaylist(playlist)
+        }
+
+        val channel = playlist.default ?: return
+        playDefault(channel)
+    }
+
+    private fun playDefault(channel: Channel) {
         val frag = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
         if (frag is PlaybackFragment) {
             frag.playDefault(channel)
@@ -198,3 +204,4 @@ open class MainActivity : AppCompatActivity() {
         private val TAG = MainActivity::class.java.simpleName
     }
 }
+

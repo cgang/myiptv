@@ -9,9 +9,6 @@ class PlaylistAdapter(
     @param:LayoutRes private val itemLayout: Int
 ) : ArrayAdapter<Channel>(context, itemLayout, R.id.tvName) {
 
-    val default: Channel?
-        get() = if (count == 0) null else getItem(0)
-
     fun setChannels(channels: List<Channel>) {
         this.setNotifyOnChange(false)
         this.clear()

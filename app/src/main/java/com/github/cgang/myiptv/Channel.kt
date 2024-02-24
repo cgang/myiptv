@@ -14,3 +14,8 @@ class Channel(val name: String) {
         return name
     }
 }
+
+class Playlist(val group: String, val channels: List<Channel>) {
+    val default: Channel?
+        get() = if (channels.isEmpty()) null else channels[0]
+}
