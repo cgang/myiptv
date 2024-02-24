@@ -104,8 +104,8 @@ class PlaylistViewModel(
         }
     }
 
-    fun loadPlaylist(listUrl : String) {
-        Thread{
+    fun loadPlaylist(listUrl: String) {
+        Thread {
             try {
                 download(listUrl)
                 Log.d(TAG, "playlist downloaded successfully")
