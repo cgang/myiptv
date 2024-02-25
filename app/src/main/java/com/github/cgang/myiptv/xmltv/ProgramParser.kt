@@ -13,9 +13,10 @@ class ProgramParser {
         val factory = XmlPullParserFactory.newInstance()
         val parser = factory.newPullParser()
         parser.setInput(input, "UTF-8")
+
         val channels = mutableListOf<Channel>()
         val programmes = mutableListOf<Programme>()
-
+        val now = LocalDateTime.now()
         while (parser.next() != XmlPullParser.END_DOCUMENT) {
             if (parser.eventType != XmlPullParser.START_TAG) {
                 continue
@@ -24,10 +25,16 @@ class ProgramParser {
             when (parser.name) {
                 "tv" -> Unit
                 "channel" -> channels.add(parseChannel(parser))
-                "programme" -> programmes.add(parseProgramme(parser))
+                "programme" -> {
+                    val programme = parseProgramme(parser)
+                    if (programme.stop.isAfter(now)) { // skip past programme
+                        programmes.add(programme)
+                    }
+                }
                 else -> skip(parser)
             }
         }
+
         val result = mutableMapOf<String, Program>()
         for (channel in channels) {
             result.put(channel.id, Program(channel, mutableListOf()))

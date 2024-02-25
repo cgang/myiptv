@@ -3,6 +3,7 @@ package com.github.cgang.myiptv
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
+import androidx.compose.runtime.key
 import com.github.cgang.myiptv.xmltv.ProgramParser
 import java.io.IOException
 import java.io.InputStream
@@ -17,6 +18,7 @@ object Downloader {
     private var listener: PlaylistListener? = null
     private var lastPlaylistUrl: String? = null
     private var lastEpgUrl: String? = null
+    private var channelIds = mutableSetOf<String>()
 
     init {
         val thread = HandlerThread("download")
@@ -37,6 +39,11 @@ object Downloader {
         handler.post {
             download(urlStr) {
                 val channels = M3UParser().parse(InputStreamReader(it))
+                for (ch in channels) {
+                    if (ch.id != null && ch.id != "") {
+                        channelIds.add(ch.id!!)
+                    }
+                }
                 listener?.onChannels(channels)
             }
         }
@@ -50,7 +57,10 @@ object Downloader {
         lastEpgUrl = urlStr
         handler.post {
             download(urlStr) {
-                val programs = ProgramParser().parse(it)
+                var programs = ProgramParser().parse(it)
+                if (channelIds.isNotEmpty()) { // filter programs to save memory
+                    programs = programs.filterKeys { key -> channelIds.contains(key)}
+                }
                 listener?.onPrograms(programs)
             }
         }
