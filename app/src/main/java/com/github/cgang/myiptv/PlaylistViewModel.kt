@@ -18,7 +18,9 @@ class PlaylistViewModel(
     private val playlist = MutableLiveData<Playlist>()
     private var current = ""
 
+    // all programs
     private val programs = AtomicReference<Map<String, Program>>()
+    private val program = MutableLiveData<Program?>()
 
     init {
         Downloader.register(this)
@@ -75,8 +77,12 @@ class PlaylistViewModel(
         return playlist
     }
 
-    fun getProgram(id: String): Program? {
-        return this.programs.get()?.get(id)
+    fun getProgram(): LiveData<Program?> {
+        return program
+    }
+
+    fun setProgram(id: String?) {
+        this.program.value = this.programs.get()?.get(id)
     }
 
     override fun onChannels(channels: List<Channel>) {
@@ -88,7 +94,7 @@ class PlaylistViewModel(
         synchronized(this) {
             this.channels = channels.toList()
             this.groups = newGroups.toList()
-            if (current == "" && !groups.isEmpty()) {
+            if (current == "" && groups.isNotEmpty()) {
                 current = groups[0]
             }
         }

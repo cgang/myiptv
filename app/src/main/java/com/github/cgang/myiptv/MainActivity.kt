@@ -31,7 +31,7 @@ open class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.playlist_fragment, PlaylistFragment())
+            .add(R.id.playlist_fragment, PlaylistFragment(viewModel))
             .commit()
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)

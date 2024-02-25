@@ -11,15 +11,21 @@ import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.ListFragment
+import com.github.cgang.myiptv.xmltv.Program
 
-class PlaylistFragment : ListFragment() {
+class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
+    private val viewModel = model
     private var playlistUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val context = requireContext()
-        val channelAdapter = PlaylistAdapter(context, R.layout.list_item)
+        val channelAdapter = PlaylistAdapter(context, R.layout.channel_item)
         super.setListAdapter(channelAdapter)
+
+        viewModel.getProgram().observe(this) {
+            updateProgram(it)
+        }
     }
 
     override fun onAttach(context: Context) {
@@ -40,12 +46,22 @@ class PlaylistFragment : ListFragment() {
         super.onCreateView(inflater, container, savedInstanceState)
         val view = inflater.inflate(R.layout.playlist, container, false)
         Log.i(TAG, "onCreateView() $view")
+
+        view.findViewById<ListView>(android.R.id.list)?.let {
+            it.onItemSelectedListener = SelectListener(this)
+        }
+        view.findViewById<ListView>(R.id.program_list)?.let {
+            it.adapter = ProgramAdapter(requireContext())
+            it.isEnabled = false
+        }
         return view
     }
 
     fun setPlaylist(playlist: Playlist) {
         setGroup(playlist.group)
         setChannels(playlist.channels)
+        // update program information
+        onChannelSelected(listView.selectedItemPosition)
     }
 
     @SuppressLint("SetTextI18n")
@@ -77,6 +93,48 @@ class PlaylistFragment : ListFragment() {
                 Log.i(TAG, "Channel selected " + channel.name)
                 activity.play(channel)
             }
+        }
+    }
+
+    fun onChannelSelected(position: Int) {
+        val adapter = listAdapter
+        if (adapter is PlaylistAdapter) {
+            val channel = adapter.getChannel(position)
+            if (channel != null) {
+                Log.d(TAG, "Channel selected ${channel.name}")
+                viewModel.setProgram(channel.id)
+            } else {
+                viewModel.setProgram("")
+            }
+        }
+    }
+
+    private fun updateProgram(program: Program?) {
+        val name = program?.name ?: ""
+        val list = program?.getRecent(10) ?: emptyList()
+
+        Log.d(TAG, "set program for ${name}")
+        view?.findViewById<TextView>(R.id.channel_name)?.let {
+            it.text = name
+        }
+        view?.findViewById<ListView>(R.id.program_list)?.adapter.let {
+            if (it is ProgramAdapter) {
+                it.setList(list)
+            }
+        }
+    }
+
+    fun onNothingSelected() {
+        updateProgram(null)
+    }
+
+    class SelectListener(val frag: PlaylistFragment) : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            frag.onChannelSelected(position)
+        }
+
+        override fun onNothingSelected(parent: AdapterView<*>?) {
+            frag.onNothingSelected()
         }
     }
 
