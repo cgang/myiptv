@@ -129,7 +129,6 @@ open class PlaybackFragment :
     @OptIn(markerClass = [UnstableApi::class])
     fun switchTo(channel: Channel) {
         if (lastUrl != null && lastUrl == channel.url) {
-            (requireActivity() as MainActivity).hideControls()
             return
         }
         if (exoPlayer.isPlaying) {
@@ -152,7 +151,6 @@ open class PlaybackFragment :
         } catch (e: Exception) {
             Log.w(TAG, "Unable to play " + url + ": " + e.message)
         }
-        (requireActivity() as MainActivity).hideControls()
     }
 
     @OptIn(markerClass = [UnstableApi::class])
@@ -170,6 +168,7 @@ open class PlaybackFragment :
             Log.i(TAG, "Trying to play last URL: $lastUrl")
             preparePlay(lastUrl)
         }
+        (requireActivity() as MainActivity).hideControls()
     }
 
     private fun hasLastUrl(): Boolean {

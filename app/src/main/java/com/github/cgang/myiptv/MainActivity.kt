@@ -204,6 +204,7 @@ open class MainActivity : AppCompatActivity() {
         val frag = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
         if (frag is PlaybackFragment) {
             frag.playDefault(channel)
+            hideControls()
         }
     }
 
@@ -211,6 +212,7 @@ open class MainActivity : AppCompatActivity() {
         val frag = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
         if (frag is PlaybackFragment) {
             frag.switchTo(channel)
+            hideControls()
         }
     }
 

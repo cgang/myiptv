@@ -7,8 +7,8 @@
 
     <string name="play_error">播放错误</string>
 
-    <string name="no_data">无数据</string>
-    <string name="playlist_url">M3U地址</string>
+    <string name="no_playlist">无法加载播放列表</string>
+    <string name="playlist_url">播放列表M3U地址</string>
     <string name="epg_url">EPG地址</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>

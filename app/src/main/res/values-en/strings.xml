@@ -7,8 +7,8 @@
 
     <string name="play_error">Play Error</string>
 
-    <string name="no_data">No Data</string>
-    <string name="playlist_url">M3U URL</string>
+    <string name="no_playlist">Unable to load playlist</string>
+    <string name="playlist_url">Playlist M3U URL</string>
     <string name="epg_url">EPG URL</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
