@@ -119,11 +119,12 @@ open class PlaybackFragment :
     }
 
     @OptIn(markerClass = [UnstableApi::class])
-    fun playDefault(channel: Channel?) {
+    fun playDefault(channel: Channel?): Boolean {
         if (channel == null || exoPlayer.isPlaying || hasLastUrl()) {
-            return
+            return false
         }
         preparePlay(channel.url)
+        return true
     }
 
     @OptIn(markerClass = [UnstableApi::class])

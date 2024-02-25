@@ -208,8 +208,9 @@ open class MainActivity : AppCompatActivity() {
     private fun playDefault(channel: Channel) {
         val frag = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
         if (frag is PlaybackFragment) {
-            frag.playDefault(channel)
-            hideControls()
+            if (frag.playDefault(channel)) {
+                hideControls()
+            }
         }
     }
 
