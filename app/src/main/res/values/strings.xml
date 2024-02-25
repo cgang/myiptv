@@ -12,4 +12,7 @@
     <string name="epg_url">EPG URL</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
+
+    <string name="default_playlist_url" translatable="false">http://openwrt.lan/iptv.m3u</string>
+    <string name="default_epg_url" translatable="false">http://openwrt.lan/epg/e.xml</string>
 </resources>

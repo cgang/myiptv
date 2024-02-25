@@ -44,12 +44,16 @@ open class MainActivity : AppCompatActivity() {
             updatePlaylist(it)
         }
 
-        preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)?.let {
+        getPrefString(PLAYLIST_URL, R.string.default_playlist_url)?.let {
             Downloader.getPlaylist(it)
         }
-        preferences.getString(EPG_URL, DEFAULT_EPG_URL)?.let {
+        getPrefString(EPG_URL, R.string.default_epg_url)?.let {
             Downloader.getEPG(it)
         }
+    }
+
+    private fun getPrefString(key: String, resId: Int): String? {
+        return preferences.getString(key, resources.getString(resId))
     }
 
     private fun hideSystemUI() {
@@ -121,10 +125,11 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun onPreferenceChanged() {
-        preferences.getString(PLAYLIST_URL, DEFAULT_PLAYLIST_URL)?.let {
-            Downloader.getPlaylist(it)
-        }
-        preferences.getString(EPG_URL, DEFAULT_EPG_URL)?.let {
+        getPrefString(PLAYLIST_URL, R.string.default_playlist_url)
+            ?.let {
+                Downloader.getPlaylist(it)
+            }
+        getPrefString(EPG_URL, R.string.default_epg_url)?.let {
             Downloader.getEPG(it)
         }
     }

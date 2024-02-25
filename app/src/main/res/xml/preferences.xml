@@ -5,10 +5,10 @@
         android:key="PlaylistUrl"
         android:title="@string/playlist_url"
         app:useSimpleSummaryProvider="true"
-        android:defaultValue="http://openwrt.lan/iptv.m3u"/>
+        android:defaultValue="@string/default_playlist_url"/>
     <EditTextPreference
         android:key="EPGUrl"
         android:title="@string/epg_url"
         app:useSimpleSummaryProvider="true"
-        android:defaultValue="http://openwrt.lan/epg"/>
+        android:defaultValue="@string/default_epg_url"/>
 </PreferenceScreen>
