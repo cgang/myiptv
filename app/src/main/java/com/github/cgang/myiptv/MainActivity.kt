@@ -164,6 +164,11 @@ open class MainActivity : AppCompatActivity() {
                     return true
                 }
 
+                KeyEvent.KEYCODE_SETTINGS, KeyEvent.KEYCODE_MENU -> {
+                    showConfig()
+                    return true
+                }
+
                 else -> super.onKeyUp(keyCode, event)
             }
 
