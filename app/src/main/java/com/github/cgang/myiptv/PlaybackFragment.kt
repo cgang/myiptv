@@ -30,7 +30,7 @@ open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
     private lateinit var exoPlayer: ExoPlayer
     private var dataSourceFactory: DataSource.Factory? = null
-    private var lastUrl: String? = null
+    var lastUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")

@@ -15,7 +15,6 @@ import com.github.cgang.myiptv.xmltv.Program
 
 class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
     private val viewModel = model
-    private var playlistUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,6 +125,15 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
 
     fun onNothingSelected() {
         updateProgram(null)
+    }
+
+    fun switchChannel(current: String, step: Int): Channel? {
+        val adapter = listAdapter
+        return if (adapter is PlaylistAdapter) {
+            adapter.switchChannel(current, step)
+        } else {
+            null
+        }
     }
 
     class SelectListener(val frag: PlaylistFragment) : AdapterView.OnItemSelectedListener {

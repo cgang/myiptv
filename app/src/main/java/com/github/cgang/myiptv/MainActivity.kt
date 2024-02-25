@@ -155,12 +155,12 @@ open class MainActivity : AppCompatActivity() {
                 }
 
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    viewModel.switchGroup(false)
+                    viewModel.switchGroup(-1)
                     return true
                 }
 
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    viewModel.switchGroup(true)
+                    viewModel.switchGroup(1)
                     return true
                 }
 
@@ -177,6 +177,16 @@ open class MainActivity : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_SETTINGS, KeyEvent.KEYCODE_MENU -> {
                 showConfig()
+                return true
+            }
+
+            KeyEvent.KEYCODE_DPAD_UP -> {
+                switchChannel(-1)
+                return true
+            }
+
+            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                switchChannel(1)
                 return true
             }
 
@@ -213,6 +223,26 @@ open class MainActivity : AppCompatActivity() {
         if (frag is PlaybackFragment) {
             frag.switchTo(channel)
             hideControls()
+        }
+    }
+
+    private fun switchChannel(step: Int) {
+        var current: String? = null
+        val playback = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
+        if (playback is PlaybackFragment) {
+            current = playback.lastUrl
+        }
+
+        if (current == null) {
+            Log.d(TAG, "current playing URL not found")
+            return
+        }
+
+        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
+        if (frag is PlaylistFragment && playback is PlaybackFragment) {
+            frag.switchChannel(current, step)?.let {
+                playback.switchTo(it)
+            }
         }
     }
 

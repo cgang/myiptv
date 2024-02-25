@@ -37,7 +37,7 @@ class PlaylistViewModel(
         playlist.value = toPlaylist(group)
     }
 
-    fun switchGroup(forward: Boolean) {
+    fun switchGroup(step: Int) {
         if (groups.isEmpty()) {
             setGroup("")
             return
@@ -47,11 +47,7 @@ class PlaylistViewModel(
         }
         var index = groups.indexOf(current)
         if (index >= 0) {
-            if (forward) {
-                index++
-            } else {
-                index--
-            }
+            index += step
         } else {
             index = 0
         }
