@@ -19,8 +19,6 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.ui.AspectRatioFrameLayout
@@ -29,7 +27,7 @@ import androidx.media3.ui.PlayerView
 open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
     private lateinit var exoPlayer: ExoPlayer
-    private var dataSourceFactory: DataSource.Factory? = null
+    private lateinit var dataSourceFactory: DataSource.Factory
     var lastUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,7 +88,6 @@ open class PlaybackFragment :
         playerView.player = exoPlayer
         // Produces DataSource instances through which media data is loaded.
         dataSourceFactory = DefaultDataSource.Factory(context)
-        // Util.getUserAgent(context, "SimpleTV")
     }
 
     @OptIn(markerClass = [UnstableApi::class])
@@ -140,15 +137,16 @@ open class PlaybackFragment :
 
     @OptIn(markerClass = [UnstableApi::class])
     private fun preparePlay(url: String?) {
+        if (url.isNullOrEmpty()) {
+            Log.w(TAG, "null or empty URL")
+            return
+        }
+
         try {
-            // This is the MediaSource representing the media to be played.
-            val videoSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory!!)
-                .createMediaSource(MediaItem.fromUri(url!!))
-            // Prepare the player with the source.
-            exoPlayer.setMediaSource(videoSource)
+            exoPlayer.setMediaItem(MediaItem.fromUri(url))
             Log.i(TAG, "Change last URL to $url")
-            lastUrl = url
             exoPlayer.prepare()
+            lastUrl = url
         } catch (e: Exception) {
             Log.w(TAG, "Unable to play " + url + ": " + e.message)
         }
@@ -158,7 +156,6 @@ open class PlaybackFragment :
     override fun onDestroy() {
         Log.d(TAG, "onDestroy()")
         exoPlayer.release()
-        dataSourceFactory = null
         super.onDestroy()
     }
 
