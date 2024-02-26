@@ -1,5 +1,6 @@
 package com.github.cgang.myiptv
 
+import android.content.Context
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
@@ -11,13 +12,11 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-object Downloader {
+class Downloader(val context: Context) {
     private val TAG = Downloader::class.java.simpleName
     private val DefaultTimeout = 500 // seconds
     val handler: Handler
     private var listener: PlaylistListener? = null
-    private var lastPlaylistUrl: String? = null
-    private var lastEpgUrl: String? = null
     private var channelIds = mutableSetOf<String>()
 
     init {
@@ -30,12 +29,7 @@ object Downloader {
         this.listener = l
     }
 
-    fun getPlaylist(urlStr: String) {
-        if (urlStr == lastPlaylistUrl) {
-            return
-        }
-
-        lastPlaylistUrl = urlStr
+    fun downloadPlaylist(urlStr: String) {
         handler.post {
             download(urlStr) {
                 val channels = M3UParser().parse(InputStreamReader(it))
@@ -49,12 +43,7 @@ object Downloader {
         }
     }
 
-    fun getEPG(urlStr: String) {
-        if (urlStr == lastEpgUrl) {
-            return
-        }
-
-        lastEpgUrl = urlStr
+    fun downloadEPG(urlStr: String) {
         handler.post {
             download(urlStr) {
                 var programs = ProgramParser().parse(it)

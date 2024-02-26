@@ -1,5 +1,7 @@
 package com.github.cgang.myiptv
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -8,8 +10,8 @@ import com.github.cgang.myiptv.xmltv.Program
 import java.util.concurrent.atomic.AtomicReference
 
 class PlaylistViewModel(
-    private val savedStateHandle: SavedStateHandle
-) : ViewModel(), PlaylistListener {
+    private val application: Application
+) : AndroidViewModel(application), PlaylistListener {
     // all channels
     private var channels = listOf<Channel>()
 
@@ -22,8 +24,10 @@ class PlaylistViewModel(
     private val programs = AtomicReference<Map<String, Program>>()
     private val program = MutableLiveData<Program?>()
 
+    private val downloader = Downloader(application.applicationContext)
+
     init {
-        Downloader.register(this)
+        downloader.register(this)
     }
 
     fun resetGroup() {
@@ -69,8 +73,16 @@ class PlaylistViewModel(
         return Playlist(group, result)
     }
 
+    fun downloadPlaylist(url: String) {
+        downloader.downloadPlaylist(url)
+    }
+
     fun getPlaylist(): LiveData<Playlist> {
         return playlist
+    }
+
+    fun downloadEPG(url: String) {
+        downloader.downloadEPG(url)
     }
 
     fun getProgram(): LiveData<Program?> {

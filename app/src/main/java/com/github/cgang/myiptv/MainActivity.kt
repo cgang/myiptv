@@ -24,6 +24,8 @@ open class MainActivity : AppCompatActivity() {
     lateinit var preferences: SharedPreferences
     private lateinit var changeSettings: ActivityResultLauncher<Intent>
     private val viewModel: PlaylistViewModel by viewModels()
+    private var lastPlaylistUrl: String? = null
+    private var lastEpgUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -45,10 +47,12 @@ open class MainActivity : AppCompatActivity() {
         }
 
         getPrefString(PLAYLIST_URL, R.string.default_playlist_url)?.let {
-            Downloader.getPlaylist(it)
+            lastPlaylistUrl = it
+            viewModel.downloadPlaylist(it)
         }
         getPrefString(EPG_URL, R.string.default_epg_url)?.let {
-            Downloader.getEPG(it)
+            lastEpgUrl = it
+            viewModel.downloadEPG(it)
         }
     }
 
@@ -127,10 +131,16 @@ open class MainActivity : AppCompatActivity() {
     private fun onPreferenceChanged() {
         getPrefString(PLAYLIST_URL, R.string.default_playlist_url)
             ?.let {
-                Downloader.getPlaylist(it)
+                if (lastPlaylistUrl != it) {
+                    viewModel.downloadPlaylist(it)
+                    lastPlaylistUrl = it
+                }
             }
         getPrefString(EPG_URL, R.string.default_epg_url)?.let {
-            Downloader.getEPG(it)
+            if (lastEpgUrl != it) {
+                viewModel.downloadEPG(it)
+                lastEpgUrl = it
+            }
         }
     }
 
