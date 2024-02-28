@@ -44,16 +44,28 @@ open class PlaybackFragment :
         }
     }
 
+    @OptIn(UnstableApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = super.onCreateView(inflater, container, savedInstanceState)
-        Log.i(TAG, "onCreateView(), returns $view")
-        view?.let {
-            initializePlayer(view)
+        if (view == null) {
+            Log.w(TAG, "player view not created")
+            return null
         }
+
+        val context = context ?: return null
+        val playerView = view.findViewById<PlayerView>(R.id.player_view)
+        if (hasAspectRatio(16, 9)) {
+            Log.d(TAG, "TV screen aspect ratio found")
+            playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+        }
+
+        exoPlayer = initializePlayer(context)
+        dataSourceFactory = DefaultDataSource.Factory(context)
+        playerView.player = exoPlayer
         return view
     }
 
@@ -65,35 +77,25 @@ open class PlaybackFragment :
     }
 
     @OptIn(markerClass = [UnstableApi::class])
-    private fun initializePlayer(rootView: View) {
+    private fun initializePlayer(context: Context): ExoPlayer {
         Log.d(TAG, "Initializing player")
-        var context = context
-        if (context == null) {
-            Log.w(TAG, "null context")
-            context = rootView.context
-        }
-        val renderersFactory = DefaultRenderersFactory(context!!)
+        val renderersFactory = DefaultRenderersFactory(context)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
-        exoPlayer = ExoPlayer.Builder(context, renderersFactory)
+        val exoPlayer = ExoPlayer.Builder(context, renderersFactory)
             .setTrackSelector(DefaultTrackSelector(context))
             .setLoadControl(createLoadControl())
             .build()
         exoPlayer.addListener(this)
         exoPlayer.playWhenReady = true
-        val playerView = rootView.findViewById<PlayerView>(R.id.player_view)
-        if (hasAspectRatio(16, 9)) {
-            Log.d(TAG, "TV screen aspect ratio found")
-            playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
-        }
-        playerView.player = exoPlayer
         // Produces DataSource instances through which media data is loaded.
-        dataSourceFactory = DefaultDataSource.Factory(context)
+        return exoPlayer
     }
 
     @OptIn(markerClass = [UnstableApi::class])
     protected fun createLoadControl(): DefaultLoadControl {
         return DefaultLoadControl.Builder()
-            .setBufferDurationsMs(500, 5000, 100, 100)
+            .setBufferDurationsMs(500, 5000, 500, 500)
+            .setPrioritizeTimeOverSizeThresholds(true)
             .build()
     }
 
@@ -117,7 +119,7 @@ open class PlaybackFragment :
 
     @OptIn(markerClass = [UnstableApi::class])
     fun playDefault(channel: Channel?): Boolean {
-        if (channel == null || exoPlayer.isPlaying || hasLastUrl()) {
+        if (channel == null || exoPlayer.isPlaying || !lastUrl.isNullOrEmpty()) {
             return false
         }
         preparePlay(channel.url)
@@ -162,15 +164,11 @@ open class PlaybackFragment :
     override fun onStart() {
         Log.d(TAG, "onStart()")
         super.onStart()
-        if (hasLastUrl()) {
+        if (!lastUrl.isNullOrEmpty()) {
             Log.i(TAG, "Trying to play last URL: $lastUrl")
             preparePlay(lastUrl)
         }
         (requireActivity() as MainActivity).hideControls()
-    }
-
-    private fun hasLastUrl(): Boolean {
-        return lastUrl != null && !lastUrl!!.isEmpty()
     }
 
     @OptIn(markerClass = [UnstableApi::class])
