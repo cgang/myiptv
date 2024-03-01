@@ -93,7 +93,7 @@ open class PlaybackFragment :
         val bufferMs = if (bufMs < minBufferMs) minBufferMs else if (bufMs > maxBufferMs) maxBufferMs else bufMs
 
         return DefaultLoadControl.Builder()
-            .setBufferDurationsMs(bufferMs, maxBufferMs, minBufferMs, bufferMs)
+            .setBufferDurationsMs(bufferMs, maxBufferMs, bufferMs / 2, bufferMs)
             .setPrioritizeTimeOverSizeThresholds(true)
             .build()
     }
@@ -210,7 +210,7 @@ open class PlaybackFragment :
 
     companion object {
         val TAG = PlaybackFragment::class.java.simpleName
-        val minBufferMs = 500
+        val minBufferMs = 100
         val maxBufferMs = 5000
     }
 }
