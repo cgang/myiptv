@@ -6,11 +6,14 @@
         android:title="@string/playlist_url"
         app:useSimpleSummaryProvider="true"
         android:defaultValue="@string/default_playlist_url"/>
+    <SwitchPreferenceCompat
+        android:key="PreferPlaylistEPG"
+        android:title="@string/prefer_tvg_url"
+        android:defaultValue="true"/>
     <EditTextPreference
         android:key="EPGUrl"
         android:title="@string/epg_url"
-        app:useSimpleSummaryProvider="true"
-        android:defaultValue="@string/default_epg_url"/>
+        app:useSimpleSummaryProvider="true"/>
     <EditTextPreference
         android:key="BufferDuration"
         android:title="@string/buffer_duration"

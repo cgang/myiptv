@@ -41,13 +41,15 @@ class Downloader(val context: Context) {
     fun downloadPlaylist(urlStr: String) {
         handler.post {
             download(urlStr) {
-                val channels = M3UParser().parse(InputStreamReader(it))
+                val parser = M3UParser()
+                parser.parse(InputStreamReader(it))
+                val channels = parser.channels
                 for (ch in channels) {
                     if (ch.id != null && ch.id != "") {
                         channelIds.add(ch.id!!)
                     }
                 }
-                listener?.onChannels(channels)
+                listener?.onChannels(parser.tvgUrl, channels)
             }
         }
     }

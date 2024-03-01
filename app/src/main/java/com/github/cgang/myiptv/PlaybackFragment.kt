@@ -74,10 +74,7 @@ open class PlaybackFragment :
         Log.d(TAG, "Initializing player")
         val renderersFactory = DefaultRenderersFactory(context)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
-        val bufMs = (activity as MainActivity).getPrefInt(
-            "BufferDuration",
-            R.string.default_buffer_duration
-        )
+        val bufMs = (activity as MainActivity).getBufferDuration()
         val exoPlayer = ExoPlayer.Builder(context, renderersFactory)
             .setTrackSelector(DefaultTrackSelector(context))
             .setLoadControl(createLoadControl(bufMs))

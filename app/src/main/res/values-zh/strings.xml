@@ -13,4 +13,5 @@
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
     <string name="buffer_duration">缓冲时长(毫秒)</string>
+    <string name="prefer_tvg_url">优先使用播放列表内的EPG URL</string>
 </resources>

@@ -4,8 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import com.github.cgang.myiptv.xmltv.Program
 import java.util.concurrent.atomic.AtomicReference
 
@@ -18,6 +16,7 @@ class PlaylistViewModel(
     // all groups
     private var groups = listOf<String>()
     private val playlist = MutableLiveData<Playlist>()
+    private val tvgUrl = MutableLiveData<String>()
     private var current = ""
 
     // all programs
@@ -82,6 +81,10 @@ class PlaylistViewModel(
         return playlist
     }
 
+    fun getTvgUrl(): LiveData<String> {
+        return tvgUrl
+    }
+
     fun downloadEPG(url: String) {
         downloader.downloadEPG(url)
     }
@@ -94,7 +97,7 @@ class PlaylistViewModel(
         this.program.value = this.programs.get()?.get(id)
     }
 
-    override fun onChannels(channels: List<Channel>) {
+    override fun onChannels(tvgUrl: String?, channels: List<Channel>) {
         val newGroups = linkedSetOf<String>()
         for (ch in channels) {
             ch.group?.let { newGroups.add(it) }
@@ -108,6 +111,7 @@ class PlaylistViewModel(
             }
         }
         playlist.postValue(toPlaylist(current))
+        tvgUrl?.let { this.tvgUrl.postValue(it) }
     }
 
 

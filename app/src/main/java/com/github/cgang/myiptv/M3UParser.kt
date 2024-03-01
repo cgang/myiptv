@@ -6,9 +6,12 @@ import java.io.Reader
 import java.util.regex.Pattern
 
 class M3UParser {
+    val channels = mutableListOf<Channel>()
+    var tvgUrl: String? = null
+
     @Throws(IOException::class)
-    fun parse(reader: Reader?): List<Channel> {
-        return if (reader is BufferedReader) {
+    fun parse(reader: Reader?) {
+        if (reader is BufferedReader) {
             parse(reader)
         } else {
             parse(BufferedReader(reader))
@@ -16,28 +19,36 @@ class M3UParser {
     }
 
     @Throws(IOException::class)
-    fun parse(reader: BufferedReader): List<Channel> {
+    fun parse(reader: BufferedReader) {
         var line = reader.readLine()
         if (!line.startsWith(EXTM3U)) {
             throw IOException("Invalid header")
         }
-        val channels = mutableListOf<Channel>()
         var channel: Channel? = null
         while (reader.readLine().also { line = it } != null) {
-            line = line.trim { it <= ' ' }
-            if (line.isEmpty()) continue
-            if (line.startsWith("#")) {
-                if (line.startsWith(EXTINF)) {
-                    line = line.substring(EXTINF.length)
-                    channel = parseTitle(line)
-                }
+            line = line.trim()
+            if (line.startsWith(EXTM3U)) {
+                parseHeader(line.substring(EXTM3U.length))
+                channel = null
+            } else if (line.startsWith(EXTINF)) {
+                channel = parseTitle(line.substring(EXTINF.length))
             } else if (channel != null) {
                 channel.url = line
                 channels.add(channel)
                 channel = null
             }
         }
-        return channels
+    }
+
+    private fun parseHeader(line: String) {
+        val m = ATTR_PATTERN.matcher(line)
+        while (m.find()) {
+            when (m.group(1)) {
+                "x-tvg-url", "url-tvg" -> {
+                    this.tvgUrl = m.group(2)
+                }
+            }
+        }
     }
 
     @Throws(IOException::class)

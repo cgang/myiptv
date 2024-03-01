@@ -13,4 +13,5 @@
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="buffer_duration">Buffer Duration (ms)</string>
+    <string name="prefer_tvg_url">Prefer EPG URL in playlist</string>
 </resources>

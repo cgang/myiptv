@@ -45,16 +45,18 @@ open class MainActivity : AppCompatActivity() {
         viewModel.getPlaylist().observe(this) {
             updatePlaylist(it)
         }
+        viewModel.getTvgUrl().observe(this) {
+            updateTvgUrl(it)
+        }
 
         onPreferenceChanged()
     }
 
-    private fun getPrefString(key: String, resId: Int): String? {
-        return preferences.getString(key, resources.getString(resId))
-    }
-
-    fun getPrefInt(key: String, resId: Int): Int {
-        val text = preferences.getString(key, resources.getString(resId))
+    fun getBufferDuration(): Int {
+        val text = preferences.getString(
+            "BufferDuration",
+            resources.getString(R.string.default_buffer_duration)
+        )
         return text?.toInt() ?: 0
     }
 
@@ -127,13 +129,15 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun onPreferenceChanged() {
-        getPrefString(PLAYLIST_URL, R.string.default_playlist_url)?.let {
+        val defaultPlaylistUrl = resources.getString(R.string.default_playlist_url)
+        preferences.getString(PLAYLIST_URL, defaultPlaylistUrl)?.let {
             if (lastPlaylistUrl != it) {
                 viewModel.downloadPlaylist(it)
                 lastPlaylistUrl = it
             }
         }
-        getPrefString(EPG_URL, R.string.default_epg_url)?.let {
+
+        preferences.getString(EPG_URL, null)?.let {
             if (lastEpgUrl != it) {
                 viewModel.downloadEPG(it)
                 lastEpgUrl = it
@@ -200,6 +204,15 @@ open class MainActivity : AppCompatActivity() {
             }
 
             else -> super.onKeyUp(keyCode, event)
+        }
+    }
+
+    private fun updateTvgUrl(url: String) {
+        if (preferences.getBoolean("PreferPlaylistEPG", true)) {
+            if (lastEpgUrl != url) {
+                viewModel.downloadEPG(url)
+                lastEpgUrl = url
+            }
         }
     }
 
