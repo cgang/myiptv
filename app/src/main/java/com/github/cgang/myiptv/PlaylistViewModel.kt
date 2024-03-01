@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 class PlaylistViewModel(
     private val application: Application
-) : AndroidViewModel(application), PlaylistListener {
+) : AndroidViewModel(application), Downloader.Listener {
     // all channels
     private var channels = AtomicReference<List<Channel>>()
 

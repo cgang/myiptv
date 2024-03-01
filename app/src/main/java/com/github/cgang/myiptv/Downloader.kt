@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
+import com.github.cgang.myiptv.xmltv.Program
 import com.github.cgang.myiptv.xmltv.ProgramParser
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -11,13 +12,17 @@ import okhttp3.Request
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 
 class Downloader(val context: Context) {
+    interface Listener {
+        fun onChannels(tvgUrl: String?, channels: List<Channel>)
+
+        fun onPrograms(programs: Map<String, Program>)
+    }
+
     private val TAG = Downloader::class.java.simpleName
     private val DefaultTimeout = 500 // seconds
-    private var listener: PlaylistListener? = null
+    private var listener: Listener? = null
     private var channelIds = mutableSetOf<String>()
     private val client: OkHttpClient
     private val handler: Handler
@@ -34,7 +39,7 @@ class Downloader(val context: Context) {
             .build()
     }
 
-    fun register(l: PlaylistListener) {
+    fun register(l: Listener) {
         this.listener = l
     }
 

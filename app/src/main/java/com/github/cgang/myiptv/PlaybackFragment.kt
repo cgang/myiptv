@@ -207,7 +207,8 @@ open class PlaybackFragment :
 
     companion object {
         val TAG = PlaybackFragment::class.java.simpleName
-        val minBufferMs = 100
-        val maxBufferMs = 5000
+        const val LAST_URL = "LastPlayingUrl"
+        const val minBufferMs = 100
+        const val maxBufferMs = 5000
     }
 }

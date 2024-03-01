@@ -54,7 +54,7 @@ open class MainActivity : AppCompatActivity() {
 
     fun getBufferDuration(): Int {
         val text = preferences.getString(
-            "BufferDuration",
+            BUFFER_DURATION,
             resources.getString(R.string.default_buffer_duration)
         )
         return text?.toInt() ?: 0
@@ -208,7 +208,7 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun updateTvgUrl(url: String) {
-        if (preferences.getBoolean("PreferPlaylistEPG", true)) {
+        if (preferences.getBoolean(PREFER_PLAYLIST_EPG, true)) {
             if (lastEpgUrl != url) {
                 viewModel.downloadEPG(url)
                 lastEpgUrl = url
@@ -264,6 +264,10 @@ open class MainActivity : AppCompatActivity() {
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
+        const val PLAYLIST_URL = "PlaylistUrl"
+        const val EPG_URL = "EPGUrl"
+        const val BUFFER_DURATION = "BufferDuration"
+        const val PREFER_PLAYLIST_EPG = "PreferPlaylistEPG"
     }
 }
 
