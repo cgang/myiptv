@@ -13,7 +13,7 @@ class PlaylistViewModel(
     private val application: Application
 ) : AndroidViewModel(application), PlaylistListener {
     // all channels
-    private var channels = listOf<Channel>()
+    private var channels = AtomicReference<List<Channel>>()
 
     // all groups
     private var groups = listOf<String>()
@@ -61,6 +61,7 @@ class PlaylistViewModel(
     }
 
     private fun toPlaylist(group: String): Playlist {
+        val channels = this.channels.get() ?: emptyList()
         if (group == "") {
             return Playlist("", channels)
         }
@@ -100,13 +101,42 @@ class PlaylistViewModel(
         }
 
         synchronized(this) {
-            this.channels = channels.toList()
+            this.channels.set(channels.toList())
             this.groups = newGroups.toList()
             if (current == "" && groups.isNotEmpty()) {
                 current = groups[0]
             }
         }
         playlist.postValue(toPlaylist(current))
+    }
+
+
+    private fun indexOf(url: String): Int {
+        val channels = this.channels.get() ?: emptyList()
+        for (idx in 0..<channels.size) {
+            val ch = channels.getOrNull(idx)
+            if (ch?.url == url) {
+                return idx
+            }
+        }
+        return -1
+    }
+
+    fun switchChannel(url: String, step: Int): Channel? {
+        val channels = this.channels.get() ?: emptyList()
+        val total = channels.size
+        if (total <= 1) {
+            return null
+        }
+
+        var index = indexOf(url)
+        if (index < 0 || index >= total) {
+            return null
+        }
+
+        index += step
+        index = Math.floorMod(index, total)
+        return channels.getOrNull(index)
     }
 
     override fun onPrograms(programs: Map<String, Program>) {

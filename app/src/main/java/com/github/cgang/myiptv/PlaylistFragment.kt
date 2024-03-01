@@ -128,12 +128,7 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
     }
 
     fun switchChannel(current: String, step: Int): Channel? {
-        val adapter = listAdapter
-        return if (adapter is PlaylistAdapter) {
-            adapter.switchChannel(current, step)
-        } else {
-            null
-        }
+        return viewModel.switchChannel(current, step)
     }
 
     class SelectListener(val frag: PlaylistFragment) : AdapterView.OnItemSelectedListener {
