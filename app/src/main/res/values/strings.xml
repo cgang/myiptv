@@ -1,6 +1,9 @@
 <resources>
-    <string name="app_name">MyTV</string>
+    <string name="default_playlist_url" translatable="false">http://openwrt.lan/iptv.m3u</string>
+    <string name="default_epg_url" translatable="false">http://openwrt.lan/epg/e.xml</string>
+    <string name="default_buffer_duration" translatable="false">500</string>
 
+    <string name="app_name">MyTV</string>
     <string name="title_activity_main">TV Show</string>
 
     <string name="others_group">Others</string>
@@ -12,7 +15,6 @@
     <string name="epg_url">EPG URL</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
+    <string name="buffer_duration">Buffer duration</string>
 
-    <string name="default_playlist_url" translatable="false">http://openwrt.lan/iptv.m3u</string>
-    <string name="default_epg_url" translatable="false">http://openwrt.lan/epg/e.xml</string>
 </resources>

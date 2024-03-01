@@ -11,4 +11,9 @@
         android:title="@string/epg_url"
         app:useSimpleSummaryProvider="true"
         android:defaultValue="@string/default_epg_url"/>
+    <EditTextPreference
+        android:key="BufferDuration"
+        android:title="@string/buffer_duration"
+        app:useSimpleSummaryProvider="true"
+        android:defaultValue="@string/default_buffer_duration"/>
 </PreferenceScreen>

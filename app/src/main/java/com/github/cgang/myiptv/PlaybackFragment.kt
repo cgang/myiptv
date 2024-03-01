@@ -14,8 +14,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -26,8 +24,7 @@ import androidx.media3.ui.PlayerView
 
 open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
-    private lateinit var exoPlayer: ExoPlayer
-    private lateinit var dataSourceFactory: DataSource.Factory
+    private var exoPlayer: ExoPlayer? = null
     var lastUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,16 +53,12 @@ open class PlaybackFragment :
             return null
         }
 
-        val context = context ?: return null
         val playerView = view.findViewById<PlayerView>(R.id.player_view)
         if (hasAspectRatio(16, 9)) {
             Log.d(TAG, "TV screen aspect ratio found")
             playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
         }
 
-        exoPlayer = initializePlayer(context)
-        dataSourceFactory = DefaultDataSource.Factory(context)
-        playerView.player = exoPlayer
         return view
     }
 
@@ -81,9 +74,13 @@ open class PlaybackFragment :
         Log.d(TAG, "Initializing player")
         val renderersFactory = DefaultRenderersFactory(context)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+        val bufMs = (activity as MainActivity).getPrefInt(
+            "BufferDuration",
+            R.string.default_buffer_duration
+        )
         val exoPlayer = ExoPlayer.Builder(context, renderersFactory)
             .setTrackSelector(DefaultTrackSelector(context))
-            .setLoadControl(createLoadControl())
+            .setLoadControl(createLoadControl(bufMs))
             .build()
         exoPlayer.addListener(this)
         exoPlayer.playWhenReady = true
@@ -92,9 +89,11 @@ open class PlaybackFragment :
     }
 
     @OptIn(markerClass = [UnstableApi::class])
-    protected fun createLoadControl(): DefaultLoadControl {
+    protected fun createLoadControl(bufMs: Int): DefaultLoadControl {
+        val bufferMs = if (bufMs < minBufferMs) minBufferMs else if (bufMs > maxBufferMs) maxBufferMs else bufMs
+
         return DefaultLoadControl.Builder()
-            .setBufferDurationsMs(500, 5000, 500, 500)
+            .setBufferDurationsMs(bufferMs, maxBufferMs, minBufferMs, bufferMs)
             .setPrioritizeTimeOverSizeThresholds(true)
             .build()
     }
@@ -119,11 +118,15 @@ open class PlaybackFragment :
 
     @OptIn(markerClass = [UnstableApi::class])
     fun playDefault(channel: Channel?): Boolean {
-        if (channel == null || exoPlayer.isPlaying || !lastUrl.isNullOrEmpty()) {
+        if (channel == null || isPlaying() || !lastUrl.isNullOrEmpty()) {
             return false
         }
         preparePlay(channel.url)
         return true
+    }
+
+    private fun isPlaying(): Boolean {
+        return exoPlayer?.isPlaying ?: false
     }
 
     @OptIn(markerClass = [UnstableApi::class])
@@ -131,8 +134,8 @@ open class PlaybackFragment :
         if (lastUrl != null && lastUrl == channel.url) {
             return
         }
-        if (exoPlayer.isPlaying) {
-            exoPlayer.stop()
+        if (isPlaying()) {
+            exoPlayer?.stop()
         }
         preparePlay(channel.url)
     }
@@ -145,9 +148,9 @@ open class PlaybackFragment :
         }
 
         try {
-            exoPlayer.setMediaItem(MediaItem.fromUri(url))
+            exoPlayer?.setMediaItem(MediaItem.fromUri(url))
             Log.i(TAG, "Change last URL to $url")
-            exoPlayer.prepare()
+            exoPlayer?.prepare()
             lastUrl = url
         } catch (e: Exception) {
             Log.w(TAG, "Unable to play " + url + ": " + e.message)
@@ -157,13 +160,20 @@ open class PlaybackFragment :
     @OptIn(markerClass = [UnstableApi::class])
     override fun onDestroy() {
         Log.d(TAG, "onDestroy()")
-        exoPlayer.release()
         super.onDestroy()
     }
 
     override fun onStart() {
         Log.d(TAG, "onStart()")
         super.onStart()
+
+        val context = context
+        if (context != null) {
+            exoPlayer = initializePlayer(context)
+            val playerView = view?.findViewById<PlayerView>(R.id.player_view)
+            playerView?.player = exoPlayer
+        }
+
         if (!lastUrl.isNullOrEmpty()) {
             Log.i(TAG, "Trying to play last URL: $lastUrl")
             preparePlay(lastUrl)
@@ -174,7 +184,7 @@ open class PlaybackFragment :
     @OptIn(markerClass = [UnstableApi::class])
     override fun onPause() {
         Log.d(TAG, "onPause()")
-        exoPlayer.playWhenReady = false
+        exoPlayer?.playWhenReady = false
         super.onPause()
     }
 
@@ -182,13 +192,15 @@ open class PlaybackFragment :
     override fun onResume() {
         Log.d(TAG, "onResume()")
         super.onResume()
-        exoPlayer.playWhenReady = true
+        exoPlayer?.playWhenReady = true
     }
 
     @OptIn(markerClass = [UnstableApi::class])
     override fun onStop() {
         Log.d(TAG, "onStop()")
-        exoPlayer.stop()
+        exoPlayer?.release()
+        exoPlayer = null
+
         Log.i(TAG, "Saving last URL: $lastUrl")
         val activity = activity
         activity?.getPreferences(Context.MODE_PRIVATE)?.edit()
@@ -198,5 +210,7 @@ open class PlaybackFragment :
 
     companion object {
         val TAG = PlaybackFragment::class.java.simpleName
+        val minBufferMs = 500
+        val maxBufferMs = 5000
     }
 }

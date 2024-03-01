@@ -46,18 +46,16 @@ open class MainActivity : AppCompatActivity() {
             updatePlaylist(it)
         }
 
-        getPrefString(PLAYLIST_URL, R.string.default_playlist_url)?.let {
-            lastPlaylistUrl = it
-            viewModel.downloadPlaylist(it)
-        }
-        getPrefString(EPG_URL, R.string.default_epg_url)?.let {
-            lastEpgUrl = it
-            viewModel.downloadEPG(it)
-        }
+        onPreferenceChanged()
     }
 
     private fun getPrefString(key: String, resId: Int): String? {
         return preferences.getString(key, resources.getString(resId))
+    }
+
+    fun getPrefInt(key: String, resId: Int): Int {
+        val text = preferences.getString(key, resources.getString(resId))
+        return text?.toInt() ?: 0
     }
 
     private fun hideSystemUI() {
@@ -129,13 +127,12 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun onPreferenceChanged() {
-        getPrefString(PLAYLIST_URL, R.string.default_playlist_url)
-            ?.let {
-                if (lastPlaylistUrl != it) {
-                    viewModel.downloadPlaylist(it)
-                    lastPlaylistUrl = it
-                }
+        getPrefString(PLAYLIST_URL, R.string.default_playlist_url)?.let {
+            if (lastPlaylistUrl != it) {
+                viewModel.downloadPlaylist(it)
+                lastPlaylistUrl = it
             }
+        }
         getPrefString(EPG_URL, R.string.default_epg_url)?.let {
             if (lastEpgUrl != it) {
                 viewModel.downloadEPG(it)
