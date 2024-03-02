@@ -21,11 +21,11 @@ class M3UParser {
     @Throws(IOException::class)
     fun parse(reader: BufferedReader) {
         var line = reader.readLine()
-        if (!line.startsWith(EXTM3U)) {
+        if (line == null || !line.startsWith(EXTM3U)) {
             throw IOException("Invalid header")
         }
         var channel: Channel? = null
-        while (reader.readLine().also { line = it } != null) {
+        while (line != null) {
             line = line.trim()
             if (line.startsWith(EXTM3U)) {
                 parseHeader(line.substring(EXTM3U.length))
@@ -37,6 +37,7 @@ class M3UParser {
                 channels.add(channel)
                 channel = null
             }
+            reader.readLine().also { line = it }
         }
     }
 
