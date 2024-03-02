@@ -14,6 +14,10 @@
         android:key="EPGUrl"
         android:title="@string/epg_url"
         app:useSimpleSummaryProvider="true"/>
+    <SwitchPreferenceCompat
+        android:key="EnableAllChannelsGroup"
+        android:title="@string/enable_all_channels_group"
+        android:defaultValue="false"/>
     <EditTextPreference
         android:key="BufferDuration"
         android:title="@string/buffer_duration"

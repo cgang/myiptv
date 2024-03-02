@@ -6,6 +6,7 @@
     <string name="title_activity_main">TV Show</string>
 
     <string name="others_group">Others</string>
+    <string name="all_channels">All Channels</string>
 
     <string name="play_error">Play Error</string>
 
@@ -16,5 +17,6 @@
     <string name="cancel">Cancel</string>
     <string name="buffer_duration">Buffer duration</string>
     <string name="prefer_tvg_url">Prefer TVG URL</string>
+    <string name="enable_all_channels_group">Enable \"All Channels\" group</string>
 
 </resources>

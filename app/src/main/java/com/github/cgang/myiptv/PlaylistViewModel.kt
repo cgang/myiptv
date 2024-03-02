@@ -40,30 +40,43 @@ class PlaylistViewModel(
         playlist.value = toPlaylist(group)
     }
 
-    fun switchGroup(step: Int) {
+    fun switchGroup(useAllChannels: Boolean, step: Int) {
         if (groups.isEmpty()) {
             setGroup("")
             return
-        } else if (groups.size == 1) {
+        } else if (groups.size == 1 && !useAllChannels) {
             setGroup(groups[0])
             return
         }
         var index = groups.indexOf(current)
-        if (index >= 0) {
+        if (index >= 0 || useAllChannels) {
             index += step
         } else {
             index = 0
         }
 
-        index = Math.floorMod(index, groups.size)
-        setGroup(groups[index])
+        if (useAllChannels) {
+            index = Math.floorMod(index, groups.size + 1)
+            if (index == groups.size) {
+                setGroup(ALL_CHANNELS_GROUP)
+            } else {
+                setGroup(groups[index])
+            }
+        } else {
+            index = Math.floorMod(index, groups.size)
+            setGroup(groups[index])
+        }
     }
 
     private fun toPlaylist(group: String): Playlist {
         val channels = this.channels.get() ?: emptyList()
         if (group == "") {
             return Playlist("", channels)
+        } else if (group == ALL_CHANNELS_GROUP) {
+            val name = application.resources.getString(R.string.all_channels)
+            return Playlist(name, channels)
         }
+
         val result = mutableListOf<Channel>()
         for (ch in channels) {
             if (ch.group == group) {
@@ -145,5 +158,9 @@ class PlaylistViewModel(
 
     override fun onPrograms(programs: Map<String, Program>) {
         this.programs.set(programs)
+    }
+
+    companion object {
+        const val ALL_CHANNELS_GROUP = "_ALL_CHANNELS_GROUP"
     }
 }

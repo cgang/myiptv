@@ -155,6 +155,10 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun useAllChannels(): Boolean {
+        return preferences.getBoolean(ENABLE_ALL_CHANNELS, false)
+    }
+
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d(TAG, "onKeyUp($keyCode)")
         if (keyCode == KeyEvent.KEYCODE_MENU) {
@@ -171,12 +175,12 @@ open class MainActivity : AppCompatActivity() {
                 }
 
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    viewModel.switchGroup(-1)
+                    viewModel.switchGroup(useAllChannels(), -1)
                     return true
                 }
 
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    viewModel.switchGroup(1)
+                    viewModel.switchGroup(useAllChannels(), 1)
                     return true
                 }
 
@@ -268,6 +272,7 @@ open class MainActivity : AppCompatActivity() {
         const val EPG_URL = "EPGUrl"
         const val BUFFER_DURATION = "BufferDuration"
         const val PREFER_PLAYLIST_EPG = "PreferPlaylistEPG"
+        const val ENABLE_ALL_CHANNELS = "EnableAllChannelsGroup"
     }
 }
 
