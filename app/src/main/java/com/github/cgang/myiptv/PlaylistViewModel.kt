@@ -130,7 +130,7 @@ class PlaylistViewModel(
 
     private fun indexOf(url: String): Int {
         val channels = this.channels.get() ?: emptyList()
-        for (idx in 0..<channels.size) {
+        for (idx in channels.indices) {
             val ch = channels.getOrNull(idx)
             if (ch?.url == url) {
                 return idx
