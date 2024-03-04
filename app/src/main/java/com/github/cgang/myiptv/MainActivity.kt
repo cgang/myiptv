@@ -191,12 +191,12 @@ open class MainActivity : AppCompatActivity() {
 
         return when (keyCode) {
             KeyEvent.KEYCODE_DPAD_UP -> {
-                switchChannel(-1)
+                switchChannel(1)
                 return true
             }
 
             KeyEvent.KEYCODE_DPAD_DOWN -> {
-                switchChannel(1)
+                switchChannel(-1)
                 return true
             }
 
@@ -260,7 +260,7 @@ open class MainActivity : AppCompatActivity() {
 
         val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
         if (frag is PlaylistFragment && playback is PlaybackFragment) {
-            frag.switchChannel(current, step)?.let {
+            viewModel.switchChannel(current, step)?.let {
                 playback.switchTo(it)
             }
         }
