@@ -128,8 +128,7 @@ class PlaylistViewModel(
     }
 
 
-    private fun indexOf(url: String): Int {
-        val channels = this.channels.get() ?: emptyList()
+    private fun indexOf(channels: List<Channel>, url: String): Int {
         for (idx in channels.indices) {
             val ch = channels.getOrNull(idx)
             if (ch?.url == url) {
@@ -146,7 +145,7 @@ class PlaylistViewModel(
             return null
         }
 
-        var index = indexOf(url)
+        var index = indexOf(channels, url)
         if (index < 0 || index >= total) {
             return null
         }
