@@ -175,12 +175,12 @@ open class MainActivity : AppCompatActivity() {
                 }
 
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    viewModel.switchGroup(useAllChannels(), -1)
+                    viewModel.switchGroup(useAllChannels(), PREV)
                     return true
                 }
 
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    viewModel.switchGroup(useAllChannels(), 1)
+                    viewModel.switchGroup(useAllChannels(), NEXT)
                     return true
                 }
 
@@ -190,13 +190,13 @@ open class MainActivity : AppCompatActivity() {
         }
 
         return when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                switchChannel(1)
+            KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> {
+                switchChannel(NEXT)
                 return true
             }
 
-            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                switchChannel(-1)
+            KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> {
+                switchChannel(PREV)
                 return true
             }
 
@@ -273,6 +273,8 @@ open class MainActivity : AppCompatActivity() {
         const val BUFFER_DURATION = "BufferDuration"
         const val PREFER_PLAYLIST_EPG = "PreferPlaylistEPG"
         const val ENABLE_ALL_CHANNELS = "EnableAllChannelsGroup"
+        const val PREV = -1
+        const val NEXT = 1
     }
 }
 
