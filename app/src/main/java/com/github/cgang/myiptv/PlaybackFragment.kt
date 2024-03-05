@@ -26,17 +26,16 @@ open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
     private var exoPlayer: ExoPlayer? = null
     var lastUrl: String? = null
+    var lastMimeType: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
         super.onCreate(savedInstanceState)
-        val activity = activity
-        if (activity != null) {
-            lastUrl = activity
-                .getPreferences(Context.MODE_PRIVATE)
-                .getString(LAST_URL, null)
+        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+            lastUrl = it.getString(LAST_URL, null)
+            lastMimeType = it.getString(LAST_MIME_TYPE, null)
             Log.i(TAG, "Loading last URL from preferences: $lastUrl")
-        } else {
+        } ?: {
             Log.w(TAG, "Unable to get last URL from preferences.")
         }
     }
@@ -118,7 +117,7 @@ open class PlaybackFragment :
         if (channel == null || isPlaying() || !lastUrl.isNullOrEmpty()) {
             return false
         }
-        preparePlay(channel.url)
+        preparePlay(channel.url, channel.mimeType)
         return true
     }
 
@@ -134,21 +133,23 @@ open class PlaybackFragment :
         if (isPlaying()) {
             exoPlayer?.stop()
         }
-        preparePlay(channel.url)
+        preparePlay(channel.url, channel.mimeType)
     }
 
     @OptIn(markerClass = [UnstableApi::class])
-    private fun preparePlay(url: String?) {
+    private fun preparePlay(url: String?, mimeType: String?) {
         if (url.isNullOrEmpty()) {
             Log.w(TAG, "null or empty URL")
             return
         }
 
         try {
-            exoPlayer?.setMediaItem(MediaItem.fromUri(url))
+            val item = MediaItem.Builder().setUri(url).setMimeType(mimeType).build()
+            exoPlayer?.setMediaItem(item)
             Log.i(TAG, "Change last URL to $url")
             exoPlayer?.prepare()
             lastUrl = url
+            lastMimeType = mimeType
         } catch (e: Exception) {
             Log.w(TAG, "Unable to play " + url + ": " + e.message)
         }
@@ -173,7 +174,7 @@ open class PlaybackFragment :
 
         if (!lastUrl.isNullOrEmpty()) {
             Log.i(TAG, "Trying to play last URL: $lastUrl")
-            preparePlay(lastUrl)
+            preparePlay(lastUrl, lastMimeType)
         }
         (requireActivity() as MainActivity).hideControls()
     }
@@ -208,6 +209,7 @@ open class PlaybackFragment :
     companion object {
         val TAG = PlaybackFragment::class.java.simpleName
         const val LAST_URL = "LastPlayingUrl"
+        const val LAST_MIME_TYPE = "LastMimeType"
         const val minBufferMs = 100
         const val maxBufferMs = 5000
     }
