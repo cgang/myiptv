@@ -3,6 +3,7 @@ package com.github.cgang.myiptv
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -16,6 +17,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.preference.PreferenceManager
+import com.github.cgang.myiptv.xmltv.Program
 
 /**
  * The base activity for playback.
@@ -26,6 +28,7 @@ open class MainActivity : AppCompatActivity() {
     private val viewModel: PlaylistViewModel by viewModels()
     private var lastPlaylistUrl: String? = null
     private var lastEpgUrl: String? = null
+    private var programInfoExpired: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -34,6 +37,7 @@ open class MainActivity : AppCompatActivity() {
         supportFragmentManager
             .beginTransaction()
             .add(R.id.playlist_fragment, PlaylistFragment(viewModel))
+            .add(R.id.program_info_fragment, ProgramInfoFragment())
             .commit()
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
@@ -51,6 +55,9 @@ open class MainActivity : AppCompatActivity() {
         }
         viewModel.getTvgUrl().observe(this) {
             updateTvgUrl(it)
+        }
+        viewModel.getProgram().observe(this) {
+            updateProgramInfo(it)
         }
 
         onPreferenceChanged()
@@ -84,8 +91,8 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         Log.d(TAG, "onTouchEvent($event)")
-        val controlsLayout = findViewById<FrameLayout>(R.id.playlist_fragment)
-        if (controlsLayout.visibility == View.VISIBLE) {
+        val frag = findViewById<FrameLayout>(R.id.playlist_fragment)
+        if (frag.visibility == View.VISIBLE) {
             return if (event.action == MotionEvent.ACTION_UP) {
                 hideControls()
                 true
@@ -95,7 +102,7 @@ open class MainActivity : AppCompatActivity() {
         }
         return if (event.action == MotionEvent.ACTION_UP) {
             viewModel.setGroup("") // disable group
-            controlsLayout.visibility = View.VISIBLE
+            frag.visibility = View.VISIBLE
             showControls()
             true
         } else {
@@ -124,6 +131,32 @@ open class MainActivity : AppCompatActivity() {
                 .commit()
             layout.visibility = View.GONE
             hideSystemUI()
+        }
+    }
+
+    private fun showProgramInfo() {
+        val frag = supportFragmentManager.findFragmentById(R.id.program_info_fragment)
+        val layout = findViewById<FrameLayout>(R.id.program_info_fragment)
+        if (layout.visibility == View.GONE && frag is ProgramInfoFragment) {
+            supportFragmentManager.beginTransaction()
+                .show(frag)
+                .commit()
+            layout.visibility = View.VISIBLE
+        }
+    }
+
+    private fun hideProgramInfo() {
+        if (System.currentTimeMillis() < programInfoExpired) {
+            return
+        }
+
+        val frag = supportFragmentManager.findFragmentById(R.id.program_info_fragment)
+        val layout = findViewById<FrameLayout>(R.id.program_info_fragment)
+        if (layout.visibility == View.VISIBLE && frag != null) {
+            supportFragmentManager.beginTransaction()
+                .hide(frag)
+                .commit()
+            layout.visibility = View.GONE
         }
     }
 
@@ -206,11 +239,13 @@ open class MainActivity : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> {
                 switchChannel(NEXT)
+                showProgramInfo()
                 return true
             }
 
             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> {
                 switchChannel(PREV)
+                showProgramInfo()
                 return true
             }
 
@@ -275,6 +310,24 @@ open class MainActivity : AppCompatActivity() {
         viewModel.switchChannel(current, step)
     }
 
+    private fun updateProgramInfo(program: Program?) {
+        if (program == null) {
+            return
+        }
+
+        val frag = supportFragmentManager.findFragmentById(R.id.program_info_fragment)
+        if (frag is ProgramInfoFragment) {
+            if (frag.setProgram(program)) {
+                programInfoExpired = System.currentTimeMillis() + PROGRAM_INFO_TTL
+                Handler(mainLooper).postDelayed({
+                    hideProgramInfo()
+                }, PROGRAM_INFO_TTL)
+            } else {
+                hideProgramInfo()
+            }
+        }
+    }
+
     companion object {
         private val TAG = MainActivity::class.java.simpleName
         const val PLAYLIST_URL = "PlaylistUrl"
@@ -284,6 +337,6 @@ open class MainActivity : AppCompatActivity() {
         const val ENABLE_ALL_CHANNELS = "EnableAllChannelsGroup"
         const val PREV = -1
         const val NEXT = 1
+        const val PROGRAM_INFO_TTL = 5 * 1000L // milliseconds
     }
 }
-

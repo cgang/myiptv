@@ -1,6 +1,9 @@
 package com.github.cgang.myiptv.xmltv
 
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 data class Channel(
     val id: String,
@@ -14,6 +17,10 @@ data class Programme(
     val title: String,
     val description: String,
 )
+
+fun formatTime(time: LocalDateTime): String {
+    return time.format(timeFormatter)
+}
 
 class Program(
     val chan: Channel,

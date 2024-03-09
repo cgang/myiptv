@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import com.github.cgang.myiptv.xmltv.Programme
-import java.time.format.DateTimeFormatter
+import com.github.cgang.myiptv.xmltv.formatTime
 
 class ProgramAdapter(
     context: Context
@@ -30,7 +30,7 @@ class ProgramAdapter(
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = convertView ?: inflater.inflate(R.layout.programme_item, parent, false)
         list.getOrNull(position)?.let {
-            view.findViewById<TextView>(R.id.start_time)?.text = it.start.format(timeFormatter)
+            view.findViewById<TextView>(R.id.start_time)?.text = formatTime(it.start)
             view.findViewById<TextView>(R.id.programme_title)?.text = it.title
         }
         return view
@@ -40,9 +40,5 @@ class ProgramAdapter(
         this.list.clear()
         this.list.addAll(list)
         this.notifyDataSetChanged()
-    }
-
-    companion object {
-        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 }
