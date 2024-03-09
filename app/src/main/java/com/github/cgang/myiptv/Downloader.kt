@@ -20,8 +20,6 @@ class Downloader(val context: Context) {
         fun onPrograms(programs: Map<String, Program>)
     }
 
-    private val TAG = Downloader::class.java.simpleName
-    private val DefaultTimeout = 500 // seconds
     private var listener: Listener? = null
     private var channelIds = mutableSetOf<String>()
     private val client: OkHttpClient
@@ -89,5 +87,9 @@ class Downloader(val context: Context) {
         } catch (e: Exception) {
             Log.w(TAG, "Failed to process ${urlStr}: ${e}")
         }
+    }
+
+    companion object {
+        val TAG = Downloader::class.java.simpleName
     }
 }

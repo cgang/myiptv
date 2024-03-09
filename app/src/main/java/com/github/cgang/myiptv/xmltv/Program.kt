@@ -1,9 +1,6 @@
 package com.github.cgang.myiptv.xmltv
 
-import java.time.format.DateTimeFormatter
 import java.util.Date
-
-val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 data class Channel(
     val id: String,

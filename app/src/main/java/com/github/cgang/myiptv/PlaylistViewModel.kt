@@ -148,7 +148,7 @@ class PlaylistViewModel(
             return
         }
 
-        var index = indexOf(channels, url)
+        var index = Playlist.indexOf(channels, url)
         if (index < 0 || index >= total) {
             return
         }

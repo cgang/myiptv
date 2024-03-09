@@ -155,12 +155,6 @@ open class PlaybackFragment :
         }
     }
 
-    @OptIn(markerClass = [UnstableApi::class])
-    override fun onDestroy() {
-        Log.d(TAG, "onDestroy()")
-        super.onDestroy()
-    }
-
     override fun onStart() {
         Log.d(TAG, "onStart()")
         super.onStart()

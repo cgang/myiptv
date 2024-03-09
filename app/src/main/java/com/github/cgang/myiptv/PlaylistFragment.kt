@@ -1,7 +1,6 @@
 package com.github.cgang.myiptv
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,16 +24,6 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
         viewModel.getProgram().observe(this) {
             updateProgram(it)
         }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        Log.i(TAG, "onAttach(), mHost=$host")
-    }
-
-    override fun onDetach() {
-        Log.i(TAG, "onDetach()")
-        super.onDetach()
     }
 
     override fun onCreateView(

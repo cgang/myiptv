@@ -92,9 +92,8 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        Log.d(TAG, "onTouchEvent($event)")
-        val frag = findViewById<FrameLayout>(R.id.playlist_fragment)
-        if (frag.visibility == View.VISIBLE) {
+        val layout = findFrameLayout(R.id.playlist_fragment)
+        if (layout.visibility == View.VISIBLE) {
             return if (event.action == MotionEvent.ACTION_UP) {
                 hideControls()
                 true
@@ -102,9 +101,10 @@ open class MainActivity : AppCompatActivity() {
                 super.onTouchEvent(event)
             }
         }
+
         return if (event.action == MotionEvent.ACTION_UP) {
             viewModel.setGroup("") // disable group
-            frag.visibility = View.VISIBLE
+            layout.visibility = View.VISIBLE
             showControls()
             true
         } else {
@@ -242,7 +242,6 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        Log.d(TAG, "onKeyUp($keyCode)")
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             showConfig()
             return true
@@ -268,7 +267,6 @@ open class MainActivity : AppCompatActivity() {
 
                 else -> super.onKeyUp(keyCode, event)
             }
-
         }
 
         return when (keyCode) {
