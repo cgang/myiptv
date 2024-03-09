@@ -59,8 +59,16 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
     fun setPlaylist(playlist: Playlist) {
         setGroup(playlist.group)
         setChannels(playlist.channels)
-        // update program information
-        onChannelSelected(listView.selectedItemPosition)
+        val offset = playlist.getSelected()
+        if (offset >= 0) {
+            Log.d(TAG, "using offset from playlist: ${offset}")
+            listView.setSelection(offset)
+        } else {
+            Log.d(TAG, "offset not found for ${playlist.selected} in ${playlist.group}")
+            // update program information
+            val position = listView.selectedItemPosition
+            viewModel.selectChannel(playlist.channels.getOrNull(position))
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -85,13 +93,9 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
 
     override fun onListItemClick(lv: ListView, v: View, position: Int, id: Long) {
         val adapter = listAdapter
-        val activity = activity
-        if (adapter is PlaylistAdapter && activity is MainActivity) {
+        if (adapter is PlaylistAdapter) {
             val channel = adapter.getChannel(position)
-            if (channel != null) {
-                Log.i(TAG, "Channel selected " + channel.name)
-                activity.play(channel)
-            }
+            viewModel.switchChannel(channel)
         }
     }
 
@@ -99,21 +103,17 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
         val adapter = listAdapter
         if (adapter is PlaylistAdapter) {
             val channel = adapter.getChannel(position)
-            if (channel != null) {
-                Log.d(TAG, "Channel selected ${channel.name}")
-                viewModel.setProgram(channel.id)
-            } else {
-                viewModel.setProgram("")
-            }
+            // update selected channel for view model
+            viewModel.selectChannel(channel)
         }
     }
 
+    // update program information
     private fun updateProgram(program: Program?) {
         val name = program?.name ?: ""
         val list = program?.getRecent(10) ?: emptyList()
 
-        Log.d(TAG, "set program for ${name}")
-        view?.findViewById<TextView>(R.id.channel_name)?.let {
+        view?.findViewById<TextView>(R.id.tvg_channel_name)?.let {
             it.text = name
         }
         view?.findViewById<ListView>(R.id.program_list)?.adapter.let {

@@ -41,7 +41,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/channel_name"
+            android:id="@+id/tvg_channel_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10sp"

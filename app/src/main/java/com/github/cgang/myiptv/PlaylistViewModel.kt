@@ -11,13 +11,17 @@ class PlaylistViewModel(
     private val application: Application
 ) : AndroidViewModel(application), Downloader.Listener {
     // all channels
-    private var channels = AtomicReference<List<Channel>>()
+    private val channels = AtomicReference<List<Channel>>()
 
     // all groups
     private var groups = listOf<String>()
     private val playlist = MutableLiveData<Playlist>()
     private val tvgUrl = MutableLiveData<String>()
-    private var current = ""
+    private var currentGroup = ""
+    // selected channel
+    private var selectedChannel: Channel? = null
+
+    private val playingChannel = MutableLiveData<Channel>()
 
     // all programs
     private val programs = AtomicReference<Map<String, Program>>()
@@ -29,14 +33,17 @@ class PlaylistViewModel(
         downloader.register(this)
     }
 
-    fun resetGroup() {
-        playlist.value = toPlaylist(current)
+    fun updatePlaylist() {
+        var group = currentGroup
+        if (group != ALL_CHANNELS_GROUP) {
+            group = selectedChannel?.group ?: currentGroup
+        }
+
+        playlist.value = toPlaylist(group)
     }
 
     fun setGroup(group: String) {
-        if (group != "") {
-            current = group
-        }
+        currentGroup = group
         playlist.value = toPlaylist(group)
     }
 
@@ -48,7 +55,7 @@ class PlaylistViewModel(
             setGroup(groups[0])
             return
         }
-        var index = groups.indexOf(current)
+        var index = groups.indexOf(currentGroup)
         if (index >= 0 || useAllChannels) {
             index += step
         } else {
@@ -70,11 +77,12 @@ class PlaylistViewModel(
 
     private fun toPlaylist(group: String): Playlist {
         val channels = this.channels.get() ?: emptyList()
+        val url = selectedChannel?.url ?: ""
         if (group == "") {
-            return Playlist("", channels)
+            return Playlist("", channels, url)
         } else if (group == ALL_CHANNELS_GROUP) {
             val name = application.resources.getString(R.string.all_channels)
-            return Playlist(name, channels)
+            return Playlist(name, channels, url)
         }
 
         val result = mutableListOf<Channel>()
@@ -83,11 +91,15 @@ class PlaylistViewModel(
                 result.add(ch)
             }
         }
-        return Playlist(group, result)
+        return Playlist(group, result, url)
     }
 
     fun downloadPlaylist(url: String) {
         downloader.downloadPlaylist(url)
+    }
+
+    fun getPlayingChannel(): LiveData<Channel> {
+        return playingChannel
     }
 
     fun getPlaylist(): LiveData<Playlist> {
@@ -106,7 +118,9 @@ class PlaylistViewModel(
         return program
     }
 
-    fun setProgram(id: String?) {
+    fun selectChannel(channel: Channel?) {
+        this.selectedChannel = channel
+        val id = channel?.id
         this.program.value = this.programs.get()?.get(id)
     }
 
@@ -119,40 +133,37 @@ class PlaylistViewModel(
         synchronized(this) {
             this.channels.set(channels.toList())
             this.groups = newGroups.toList()
-            if (current == "" && groups.isNotEmpty()) {
-                current = groups[0]
+            if (currentGroup == "" && groups.isNotEmpty()) {
+                currentGroup = groups[0]
             }
         }
-        playlist.postValue(toPlaylist(current))
+        playlist.postValue(toPlaylist(currentGroup))
         tvgUrl?.let { this.tvgUrl.postValue(it) }
     }
 
-
-    private fun indexOf(channels: List<Channel>, url: String): Int {
-        for (idx in channels.indices) {
-            val ch = channels.getOrNull(idx)
-            if (ch?.url == url) {
-                return idx
-            }
-        }
-        return -1
-    }
-
-    fun switchChannel(url: String, step: Int): Channel? {
+    fun switchChannel(url: String, step: Int) {
         val channels = this.channels.get() ?: emptyList()
         val total = channels.size
         if (total <= 1) {
-            return null
+            return
         }
 
         var index = indexOf(channels, url)
         if (index < 0 || index >= total) {
-            return null
+            return
         }
 
         index += step
         index = Math.floorMod(index, total)
-        return channels.getOrNull(index)
+        val channel = channels.getOrNull(index)
+        this.selectChannel(channel)
+        this.switchChannel(channel)
+    }
+
+    fun switchChannel(channel: Channel?) {
+        if (channel != null) {
+            this.playingChannel.value = channel
+        }
     }
 
     override fun onPrograms(programs: Map<String, Program>) {

@@ -42,6 +42,10 @@ open class MainActivity : AppCompatActivity() {
                 onPreferenceChanged()
             }
 
+        viewModel.getPlayingChannel().observe(this) {
+            play(it)
+        }
+
         viewModel.getPlaylist().observe(this) {
             updatePlaylist(it)
         }
@@ -201,7 +205,7 @@ open class MainActivity : AppCompatActivity() {
             }
 
             KeyEvent.KEYCODE_DPAD_CENTER -> {
-                viewModel.resetGroup()
+                viewModel.updatePlaylist()
                 controlsLayout.visibility = View.VISIBLE
                 showControls()
                 return true
@@ -258,12 +262,7 @@ open class MainActivity : AppCompatActivity() {
             return
         }
 
-        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
-        if (frag is PlaylistFragment && playback is PlaybackFragment) {
-            viewModel.switchChannel(current, step)?.let {
-                playback.switchTo(it)
-            }
-        }
+        viewModel.switchChannel(current, step)
     }
 
     companion object {
