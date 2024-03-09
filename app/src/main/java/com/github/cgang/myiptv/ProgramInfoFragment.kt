@@ -1,13 +1,15 @@
 package com.github.cgang.myiptv
 
-import android.os.Bundle
+import android.content.Context
+import android.text.format.DateFormat
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.github.cgang.myiptv.xmltv.Program
 import com.github.cgang.myiptv.xmltv.Programme
-import com.github.cgang.myiptv.xmltv.formatTime
 
-class ProgramInfoFragment() : Fragment(R.layout.program_info) {
+class ProgramInfoFragment(context: Context) : Fragment(R.layout.program_info) {
+    val timeFormat = DateFormat.getTimeFormat(context)
+
     fun setProgram(program: Program?): Boolean {
         val items = program?.getRecent(2) ?: return false
         if (items.isEmpty()) {
@@ -25,8 +27,8 @@ class ProgramInfoFragment() : Fragment(R.layout.program_info) {
 
     private fun format(prog: Programme?): String {
         return prog?.let {
-            val start = formatTime(it.start)
-            val stop = formatTime(it.stop)
+            val start = timeFormat.format(it.start)
+            val stop = timeFormat.format(it.stop)
             return "${start} - ${stop} ${prog.title}"
         } ?: ""
     }

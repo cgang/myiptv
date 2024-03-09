@@ -39,7 +39,7 @@ open class MainActivity : AppCompatActivity() {
         supportFragmentManager
             .beginTransaction()
             .add(R.id.playlist_fragment, PlaylistFragment(viewModel))
-            .add(R.id.program_info_fragment, ProgramInfoFragment())
+            .add(R.id.program_info_fragment, ProgramInfoFragment(this))
             .commit()
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)

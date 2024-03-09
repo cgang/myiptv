@@ -1,7 +1,7 @@
 package com.github.cgang.myiptv.xmltv
 
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Date
 
 val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
@@ -12,15 +12,11 @@ data class Channel(
 
 data class Programme(
     val channel: String,
-    val start: LocalDateTime,
-    val stop: LocalDateTime,
+    val start: Date,
+    val stop: Date,
     val title: String,
     val description: String,
 )
-
-fun formatTime(time: LocalDateTime): String {
-    return time.format(timeFormatter)
-}
 
 class Program(
     val chan: Channel,
@@ -30,10 +26,10 @@ class Program(
         get() = chan.name
 
     fun getRecent(limit: Int): List<Programme> {
-        val now = LocalDateTime.now()
+        val now = Date()
         val result = mutableListOf<Programme>()
         for (item in items) {
-            if (now.isAfter(item.stop)) {
+            if (now.after(item.stop)) {
                 continue
             }
 
