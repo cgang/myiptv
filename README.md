@@ -30,5 +30,9 @@ This player will try to open http://openwrt.lan/iptv.m3u by default.
 ### EPG URL
 An optional EPG URL is used to tell player where is the EPG, it needs to point to a XMLTV file.
 
+### Known Limitations
+- No channel selection by number
+- No support for SMIL playlist (by ExoPlayer)
+
 ## License
 This program is released under MIT license, see LICENSE for detail.
