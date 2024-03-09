@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.github.cgang.myiptv.xmltv.Program
 
@@ -110,44 +112,68 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showFragment(frag: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .show(frag)
+            .commit()
+    }
+
+    private fun hideFragment(frag: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .hide(frag)
+            .commit()
+    }
 
     private fun showControls() {
-        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
-        if (frag is PlaylistFragment) {
-            supportFragmentManager.beginTransaction()
-                .show(frag)
-                .commit()
-            frag.listView.requestFocus()
+        playlistFrag()?.let {
+            showFragment(it)
+            it.listView.requestFocus()
         }
     }
 
     fun hideControls() {
         Log.d(TAG, "Trying to hide controls")
-        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
-        val layout = findViewById<FrameLayout>(R.id.playlist_fragment)
-        if (layout.visibility == View.VISIBLE && frag != null) {
-            supportFragmentManager.beginTransaction()
-                .hide(frag)
-                .commit()
-            layout.visibility = View.GONE
-            hideSystemUI()
+        val layout = findFrameLayout(R.id.playlist_fragment)
+        playlistFrag()?.let {
+            if (layout.isVisible) {
+                hideFragment(it)
+                layout.visibility = View.GONE
+                hideSystemUI()
+            }
         }
     }
 
+    private fun playlistFrag(): PlaylistFragment? {
+        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
+        return if (frag is PlaylistFragment) frag else null
+    }
+
+    private fun playbackFrag(): PlaybackFragment? {
+        val frag = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
+        return if (frag is PlaybackFragment) frag else null
+    }
+
+    private fun programInfoFrag(): ProgramInfoFragment? {
+        val frag = supportFragmentManager.findFragmentById(R.id.program_info_fragment)
+        return if (frag is ProgramInfoFragment) frag else null
+    }
+
+    private fun findFrameLayout(resId: Int): FrameLayout {
+        return findViewById(resId)
+    }
+
     private fun showProgramInfo(frag: ProgramInfoFragment) {
-        if (findViewById<FrameLayout>(R.id.playlist_fragment).visibility == View.VISIBLE) {
+        if (findFrameLayout(R.id.playlist_fragment).isVisible) {
             return
         }
 
-        val layout = findViewById<FrameLayout>(R.id.program_info_fragment)
-        if (layout.visibility == View.VISIBLE) {
+        val layout = findFrameLayout(R.id.program_info_fragment)
+        if (layout.isVisible) {
             return
         }
 
         programInfoExpired = System.currentTimeMillis() + PROGRAM_INFO_TTL
-        supportFragmentManager.beginTransaction()
-            .show(frag)
-            .commit()
+        showFragment(frag)
         layout.visibility = View.VISIBLE
 
         Handler(mainLooper).postDelayed({
@@ -160,13 +186,12 @@ open class MainActivity : AppCompatActivity() {
             return
         }
 
-        val frag = supportFragmentManager.findFragmentById(R.id.program_info_fragment)
-        val layout = findViewById<FrameLayout>(R.id.program_info_fragment)
-        if (layout.visibility == View.VISIBLE && frag != null) {
-            supportFragmentManager.beginTransaction()
-                .hide(frag)
-                .commit()
-            layout.visibility = View.GONE
+        val layout = findFrameLayout(R.id.program_info_fragment)
+        programInfoFrag()?.let {
+            if (layout.isVisible) {
+                hideFragment(it)
+                layout.visibility = View.GONE
+            }
         }
     }
 
@@ -223,8 +248,8 @@ open class MainActivity : AppCompatActivity() {
             return true
         }
 
-        val controlsLayout = findViewById<FrameLayout>(R.id.playlist_fragment)
-        if (controlsLayout.visibility == View.VISIBLE) {
+        val layout = findFrameLayout(R.id.playlist_fragment)
+        if (layout.isVisible) {
             return when (keyCode) {
                 KeyEvent.KEYCODE_BACK -> {
                     hideControls()
@@ -259,7 +284,7 @@ open class MainActivity : AppCompatActivity() {
 
             KeyEvent.KEYCODE_DPAD_CENTER -> {
                 viewModel.updatePlaylist()
-                controlsLayout.visibility = View.VISIBLE
+                layout.visibility = View.VISIBLE
                 showControls()
                 return true
             }
@@ -278,44 +303,30 @@ open class MainActivity : AppCompatActivity() {
     }
 
     private fun updatePlaylist(playlist: Playlist) {
-        val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
-        if (frag is PlaylistFragment) {
-            frag.setPlaylist(playlist)
+        playlistFrag()?.setPlaylist(playlist)
+
+        playlist.default?.let {
+            playDefault(it)
         }
-        val channel = playlist.default ?: return
-        playDefault(channel)
     }
 
     private fun playDefault(channel: Channel) {
-        val frag = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
-        if (frag is PlaybackFragment) {
-            if (frag.playDefault(channel)) {
-                hideControls()
-            }
+        if (playbackFrag()?.playDefault(channel) == true) {
+            hideControls()
         }
     }
 
     fun play(channel: Channel) {
-        val frag = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
-        if (frag is PlaybackFragment) {
-            frag.switchTo(channel)
+        playbackFrag()?.let {
+            it.switchTo(channel)
             hideControls()
         }
     }
 
     private fun switchChannel(step: Int) {
-        var current: String? = null
-        val playback = supportFragmentManager.findFragmentById(R.id.playback_fragment_root)
-        if (playback is PlaybackFragment) {
-            current = playback.lastUrl
+        playbackFrag()?.lastUrl?.let {
+            viewModel.switchChannel(it, step)
         }
-
-        if (current == null) {
-            Log.d(TAG, "current playing URL not found")
-            return
-        }
-
-        viewModel.switchChannel(current, step)
     }
 
     private fun updateProgramInfo(program: Program?) {
@@ -323,9 +334,10 @@ open class MainActivity : AppCompatActivity() {
             return
         }
 
-        val frag = supportFragmentManager.findFragmentById(R.id.program_info_fragment)
-        if (frag is ProgramInfoFragment && frag.setProgram(program)) {
-            showProgramInfo(frag)
+        programInfoFrag()?.let {
+            if (it.setProgram(program)) {
+                showProgramInfo(it)
+            }
         }
     }
 
