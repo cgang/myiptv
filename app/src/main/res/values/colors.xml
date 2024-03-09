@@ -7,4 +7,5 @@
     <color name="darker_gray">#808080</color>
     <color name="light_blue">#8CB7FF</color>
     <color name="group_background">#804A137B</color>
+    <color name="programme_background">#A0404040</color>
 </resources>
