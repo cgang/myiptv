@@ -319,12 +319,10 @@ open class MainActivity : AppCompatActivity() {
         if (frag is ProgramInfoFragment) {
             if (frag.setProgram(program)) {
                 programInfoExpired = System.currentTimeMillis() + PROGRAM_INFO_TTL
-                Handler(mainLooper).postDelayed({
-                    hideProgramInfo()
-                }, PROGRAM_INFO_TTL)
-            } else {
-                hideProgramInfo()
             }
+            Handler(mainLooper).postDelayed({
+                hideProgramInfo()
+            }, PROGRAM_INFO_TTL)
         }
     }
 
