@@ -163,6 +163,16 @@ open class MainActivity : AppCompatActivity() {
         return preferences.getBoolean(ENABLE_ALL_CHANNELS, false)
     }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_CHANNEL_UP, KeyEvent.KEYCODE_CHANNEL_DOWN -> {
+                return true
+            }
+
+            else -> super.onKeyDown(keyCode, event)
+        }
+    }
+
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d(TAG, "onKeyUp($keyCode)")
         if (keyCode == KeyEvent.KEYCODE_MENU) {
