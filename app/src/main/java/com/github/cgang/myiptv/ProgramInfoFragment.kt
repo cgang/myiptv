@@ -8,7 +8,7 @@ import com.github.cgang.myiptv.xmltv.Program
 import com.github.cgang.myiptv.xmltv.Programme
 
 class ProgramInfoFragment(context: Context) : Fragment(R.layout.program_info) {
-    val timeFormat = DateFormat.getTimeFormat(context)
+    private val timeFormat = DateFormat.getTimeFormat(context)
 
     fun setProgram(program: Program?): Boolean {
         val items = program?.getRecent(2) ?: return false
@@ -29,7 +29,7 @@ class ProgramInfoFragment(context: Context) : Fragment(R.layout.program_info) {
         return prog?.let {
             val start = timeFormat.format(it.start)
             val stop = timeFormat.format(it.stop)
-            return "${start} - ${stop} ${prog.title}"
+            return "$start - $stop ${prog.title}"
         } ?: ""
     }
 }

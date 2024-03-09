@@ -25,7 +25,7 @@ import com.github.cgang.myiptv.xmltv.Program
  * The base activity for playback.
  */
 open class MainActivity : AppCompatActivity() {
-    lateinit var preferences: SharedPreferences
+    private lateinit var preferences: SharedPreferences
     private lateinit var changeSettings: ActivityResultLauncher<Intent>
     private val viewModel: PlaylistViewModel by viewModels()
     private var lastPlaylistUrl: String? = null
@@ -314,7 +314,7 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun play(channel: Channel) {
+    private fun play(channel: Channel) {
         playbackFrag()?.let {
             it.switchTo(channel)
             hideControls()

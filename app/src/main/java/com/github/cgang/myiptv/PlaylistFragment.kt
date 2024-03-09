@@ -50,7 +50,7 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
         setChannels(playlist.channels)
         val offset = playlist.getSelected()
         if (offset >= 0) {
-            Log.d(TAG, "using offset from playlist: ${offset}")
+            Log.d(TAG, "using offset from playlist: $offset")
             listView.setSelection(offset)
         } else {
             Log.d(TAG, "offset not found for ${playlist.selected} in ${playlist.group}")
@@ -116,7 +116,7 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
         updateProgram(null)
     }
 
-    class SelectListener(val frag: PlaylistFragment) : AdapterView.OnItemSelectedListener {
+    class SelectListener(private val frag: PlaylistFragment) : AdapterView.OnItemSelectedListener {
         override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
             frag.onChannelSelected(position)
         }

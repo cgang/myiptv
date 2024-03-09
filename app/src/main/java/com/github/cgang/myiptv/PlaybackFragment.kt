@@ -26,7 +26,7 @@ open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
     private var exoPlayer: ExoPlayer? = null
     var lastUrl: String? = null
-    var lastMimeType: String? = null
+    private var lastMimeType: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -53,7 +53,7 @@ open class PlaybackFragment :
         }
 
         val playerView = view.findViewById<PlayerView>(R.id.player_view)
-        if (hasAspectRatio(16, 9)) {
+        if (isTvAspectRatio()) {
             Log.d(TAG, "TV screen aspect ratio found")
             playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
         }
@@ -62,10 +62,10 @@ open class PlaybackFragment :
     }
 
     // check aspect ratio
-    private fun hasAspectRatio(width: Int, height: Int): Boolean {
+    private fun isTvAspectRatio(): Boolean {
         val dm = DisplayMetrics()
         activity?.windowManager?.defaultDisplay?.getRealMetrics(dm)
-        return dm.widthPixels > 0 && dm.widthPixels * height == dm.heightPixels * width
+        return dm.widthPixels > 0 && dm.widthPixels * 9 == dm.heightPixels * 16
     }
 
     @OptIn(markerClass = [UnstableApi::class])
@@ -86,10 +86,10 @@ open class PlaybackFragment :
 
     @OptIn(markerClass = [UnstableApi::class])
     protected fun createLoadControl(bufMs: Int): DefaultLoadControl {
-        val bufferMs = if (bufMs < minBufferMs) minBufferMs else if (bufMs > maxBufferMs) maxBufferMs else bufMs
+        val bufferMs = if (bufMs < MIN_BUFFER_DURATION) MIN_BUFFER_DURATION else if (bufMs > MAX_BUFFER_DURATION) MAX_BUFFER_DURATION else bufMs
 
         return DefaultLoadControl.Builder()
-            .setBufferDurationsMs(bufferMs, maxBufferMs, bufferMs / 2, bufferMs)
+            .setBufferDurationsMs(bufferMs, MAX_BUFFER_DURATION, bufferMs / 2, bufferMs)
             .setPrioritizeTimeOverSizeThresholds(true)
             .build()
     }
@@ -204,7 +204,7 @@ open class PlaybackFragment :
         val TAG = PlaybackFragment::class.java.simpleName
         const val LAST_URL = "LastPlayingUrl"
         const val LAST_MIME_TYPE = "LastMimeType"
-        const val minBufferMs = 100
-        const val maxBufferMs = 5000
+        const val MIN_BUFFER_DURATION = 100
+        const val MAX_BUFFER_DURATION = 5000
     }
 }
