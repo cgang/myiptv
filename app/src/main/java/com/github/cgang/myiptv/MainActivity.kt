@@ -134,15 +134,25 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showProgramInfo() {
-        val frag = supportFragmentManager.findFragmentById(R.id.program_info_fragment)
-        val layout = findViewById<FrameLayout>(R.id.program_info_fragment)
-        if (layout.visibility == View.GONE && frag is ProgramInfoFragment) {
-            supportFragmentManager.beginTransaction()
-                .show(frag)
-                .commit()
-            layout.visibility = View.VISIBLE
+    private fun showProgramInfo(frag: ProgramInfoFragment) {
+        if (findViewById<FrameLayout>(R.id.playlist_fragment).visibility == View.VISIBLE) {
+            return
         }
+
+        val layout = findViewById<FrameLayout>(R.id.program_info_fragment)
+        if (layout.visibility == View.VISIBLE) {
+            return
+        }
+
+        programInfoExpired = System.currentTimeMillis() + PROGRAM_INFO_TTL
+        supportFragmentManager.beginTransaction()
+            .show(frag)
+            .commit()
+        layout.visibility = View.VISIBLE
+
+        Handler(mainLooper).postDelayed({
+            hideProgramInfo()
+        }, PROGRAM_INFO_TTL)
     }
 
     private fun hideProgramInfo() {
@@ -239,13 +249,11 @@ open class MainActivity : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> {
                 switchChannel(NEXT)
-                showProgramInfo()
                 return true
             }
 
             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> {
                 switchChannel(PREV)
-                showProgramInfo()
                 return true
             }
 
@@ -316,13 +324,8 @@ open class MainActivity : AppCompatActivity() {
         }
 
         val frag = supportFragmentManager.findFragmentById(R.id.program_info_fragment)
-        if (frag is ProgramInfoFragment) {
-            if (frag.setProgram(program)) {
-                programInfoExpired = System.currentTimeMillis() + PROGRAM_INFO_TTL
-            }
-            Handler(mainLooper).postDelayed({
-                hideProgramInfo()
-            }, PROGRAM_INFO_TTL)
+        if (frag is ProgramInfoFragment && frag.setProgram(program)) {
+            showProgramInfo(frag)
         }
     }
 
