@@ -17,7 +17,6 @@
         android:id="@+id/programme_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
         android:padding="5sp"
         android:textSize="20sp"
         android:text="" />
