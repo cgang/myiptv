@@ -1,27 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="25sp"
-    android:gravity="center_horizontal|bottom">
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="20sp">
+
+    <TextClock
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:textSize="25sp" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0sp"
+        android:layout_weight="1" />
 
     <TextView
         android:id="@+id/current_programme"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
         android:background="@color/programme_background"
         android:padding="5sp"
+        android:textColor="@color/white"
         android:textSize="25sp" />
 
     <TextView
         android:id="@+id/next_programme"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
         android:background="@color/programme_background"
         android:padding="5sp"
+        android:textColor="@color/white"
         android:textSize="25sp" />
 
 </LinearLayout>

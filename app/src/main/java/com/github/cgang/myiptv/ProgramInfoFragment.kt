@@ -11,8 +11,8 @@ class ProgramInfoFragment(context: Context) : Fragment(R.layout.program_info) {
     private val timeFormat = DateFormat.getTimeFormat(context)
 
     fun setProgram(program: Program?): Boolean {
-        val items = program?.getRecent(2) ?: return false
-        if (items.isEmpty()) {
+        val items = program?.getRecent(2)
+        if (items.isNullOrEmpty()) {
             return false
         }
 
@@ -28,8 +28,7 @@ class ProgramInfoFragment(context: Context) : Fragment(R.layout.program_info) {
     private fun format(prog: Programme?): String {
         return prog?.let {
             val start = timeFormat.format(it.start)
-            val stop = timeFormat.format(it.stop)
-            return "$start - $stop ${prog.title}"
+            return "$start ${prog.title}"
         } ?: ""
     }
 }
