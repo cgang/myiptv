@@ -18,13 +18,14 @@ class PlaylistViewModel(
     private val playlist = MutableLiveData<Playlist>()
     private val tvgUrl = MutableLiveData<String>()
     private var currentGroup = ""
+
     // selected channel
     private var selectedChannel: Channel? = null
 
     private val playingChannel = MutableLiveData<Channel>()
 
-    // all programs
-    private val programs = AtomicReference<Map<String, Program>>()
+    // all programs with channel name as key
+    private val programMap = AtomicReference<Map<String, Program>>()
     private val program = MutableLiveData<Program?>()
 
     private val downloader = Downloader(application.applicationContext)
@@ -120,8 +121,7 @@ class PlaylistViewModel(
 
     fun selectChannel(channel: Channel?) {
         this.selectedChannel = channel
-        val id = channel?.id
-        this.program.value = this.programs.get()?.get(id)
+        this.program.value = this.programMap.get()?.get(channel?.name)
     }
 
     override fun onChannels(tvgUrl: String?, channels: List<Channel>) {
@@ -166,8 +166,22 @@ class PlaylistViewModel(
         }
     }
 
-    override fun onPrograms(programs: Map<String, Program>) {
-        this.programs.set(programs)
+    override fun onPrograms(programs: Collection<Program>) {
+        val channels = mutableMapOf<String, Channel>()
+        this.channels.get()?.forEach { ch ->
+            ch.tvgId?.let { channels[it] = ch }
+            ch.tvgName?.let { channels[it] = ch }
+            channels.putIfAbsent(ch.name, ch)
+        }
+
+        val programMap = mutableMapOf<String, Program>()
+        for (program in programs) {
+            val channel = channels[program.chan.id] ?: channels[program.chan.name]
+            channel?.let {
+                programMap[it.name] = program
+            }
+        }
+        this.programMap.set(programMap)
     }
 
     companion object {

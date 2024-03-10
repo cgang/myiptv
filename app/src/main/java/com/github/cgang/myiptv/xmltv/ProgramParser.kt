@@ -12,7 +12,7 @@ import java.util.Locale
 class ProgramParser {
     val dateTimeFormat = SimpleDateFormat("yyyyMMddHHmmss Z", Locale.getDefault())
 
-    fun parse(input: InputStream): Map<String, Program> {
+    fun parse(input: InputStream): Collection<Program> {
         val factory = XmlPullParserFactory.newInstance()
         val parser = factory.newPullParser()
         parser.setInput(input, "UTF-8")
@@ -46,7 +46,7 @@ class ProgramParser {
         for (item in programmes) {
             result[item.channel]?.items?.add(item)
         }
-        return result
+        return result.values
     }
 
     private fun parseChannel(parser: XmlPullParser): Channel {

@@ -17,11 +17,10 @@ class Downloader(val context: Context) {
     interface Listener {
         fun onChannels(tvgUrl: String?, channels: List<Channel>)
 
-        fun onPrograms(programs: Map<String, Program>)
+        fun onPrograms(programs: Collection<Program>)
     }
 
     private var listener: Listener? = null
-    private var channelIds = mutableSetOf<String>()
     private val client: OkHttpClient
     private val handler: Handler
 
@@ -46,13 +45,7 @@ class Downloader(val context: Context) {
             download(urlStr) {
                 val parser = M3UParser()
                 parser.parse(InputStreamReader(it))
-                val channels = parser.channels
-                for (ch in channels) {
-                    if (ch.id != null && ch.id != "") {
-                        channelIds.add(ch.id!!)
-                    }
-                }
-                listener?.onChannels(parser.tvgUrl, channels)
+                listener?.onChannels(parser.tvgUrl, parser.channels)
             }
         }
     }
@@ -60,10 +53,7 @@ class Downloader(val context: Context) {
     fun downloadEPG(urlStr: String) {
         handler.post {
             download(urlStr) {
-                var programs = ProgramParser().parse(it)
-                if (channelIds.isNotEmpty()) { // filter programs to save memory
-                    programs = programs.filterKeys { key -> channelIds.contains(key) }
-                }
+                val programs = ProgramParser().parse(it)
                 listener?.onPrograms(programs)
             }
         }
