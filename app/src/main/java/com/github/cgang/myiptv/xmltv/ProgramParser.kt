@@ -34,6 +34,7 @@ class ProgramParser {
                         programmes.add(programme)
                     }
                 }
+
                 else -> skip(parser)
             }
         }
@@ -85,9 +86,9 @@ class ProgramParser {
         }
 
         try {
-            val startTime = dateTimeFormat.parse(start)
-            val stopTime = dateTimeFormat.parse(stop)
-            return Programme(channel, startTime!!, stopTime!!, title, description)
+            val startTime = start?.let { dateTimeFormat.parse(start) } ?: Date()
+            val stopTime = stop?.let { dateTimeFormat.parse(it) } ?: startTime
+            return Programme(channel, startTime, stopTime, title, description)
         } catch (e: ParseException) {
             throw IOException("date time parsing failed", e)
         }

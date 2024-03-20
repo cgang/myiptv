@@ -95,8 +95,8 @@ class PlaylistViewModel(
         return Playlist(group, result, url)
     }
 
-    fun downloadPlaylist(url: String) {
-        downloader.downloadPlaylist(url)
+    fun downloadPlaylist(url: String, maxAge: Int) {
+        downloader.downloadPlaylist(url, maxAge)
     }
 
     fun getPlayingChannel(): LiveData<Channel> {
@@ -111,8 +111,8 @@ class PlaylistViewModel(
         return tvgUrl
     }
 
-    fun downloadEPG(url: String) {
-        downloader.downloadEPG(url)
+    fun downloadEPG(url: String, maxAge: Int) {
+        downloader.downloadEPG(url, maxAge)
     }
 
     fun getProgram(): LiveData<Program?> {

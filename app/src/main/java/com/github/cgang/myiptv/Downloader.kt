@@ -7,11 +7,13 @@ import android.util.Log
 import com.github.cgang.myiptv.xmltv.Program
 import com.github.cgang.myiptv.xmltv.ProgramParser
 import okhttp3.Cache
+import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
 
 class Downloader(val context: Context) {
     interface Listener {
@@ -40,9 +42,9 @@ class Downloader(val context: Context) {
         this.listener = l
     }
 
-    fun downloadPlaylist(urlStr: String) {
+    fun downloadPlaylist(urlStr: String, maxAge: Int) {
         handler.post {
-            download(urlStr) {
+            download(urlStr, maxAge) {
                 val parser = M3UParser()
                 parser.parse(InputStreamReader(it))
                 listener?.onChannels(parser.tvgUrl, parser.channels)
@@ -50,19 +52,20 @@ class Downloader(val context: Context) {
         }
     }
 
-    fun downloadEPG(urlStr: String) {
+    fun downloadEPG(urlStr: String, maxAge: Int) {
         handler.post {
-            download(urlStr) {
+            download(urlStr, maxAge) {
                 val programs = ProgramParser().parse(it)
                 listener?.onPrograms(programs)
             }
         }
     }
 
-    private fun download(urlStr: String, handle: (input: InputStream) -> Unit) {
+    private fun download(urlStr: String, maxAge: Int, handle: (input: InputStream) -> Unit) {
         try {
             Log.d(TAG, "Downloading ${urlStr}")
-            val request = Request.Builder().url(urlStr).build()
+            val cc = CacheControl.Builder().maxAge(maxAge, TimeUnit.HOURS).build()
+            val request = Request.Builder().cacheControl(cc).url(urlStr).build()
             val response = client.newCall(request).execute()
             if (response.isSuccessful) {
                 response.body!!.use {
@@ -73,9 +76,9 @@ class Downloader(val context: Context) {
                 Log.d(TAG, "Failed to download ${urlStr}: ${response.body!!.string()}")
             }
         } catch (e: IOException) {
-            Log.w(TAG, "Failed to download ${urlStr}: ${e}")
+            Log.w(TAG, "Failed to download ${urlStr}", e)
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to process ${urlStr}: ${e}")
+            Log.w(TAG, "Failed to process ${urlStr}", e)
         }
     }
 

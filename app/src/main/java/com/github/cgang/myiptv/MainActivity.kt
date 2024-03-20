@@ -45,7 +45,7 @@ open class MainActivity : AppCompatActivity() {
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
         changeSettings =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                onPreferenceChanged()
+                onPreferenceChanged(0)
             }
 
         viewModel.getPlayingChannel().observe(this) {
@@ -62,7 +62,7 @@ open class MainActivity : AppCompatActivity() {
             updateProgramInfo(it)
         }
 
-        onPreferenceChanged()
+        onPreferenceChanged(DEFAULT_MAX_AGE)
     }
 
     fun getBufferDuration(): Int {
@@ -200,18 +200,18 @@ open class MainActivity : AppCompatActivity() {
         changeSettings.launch(intent)
     }
 
-    private fun onPreferenceChanged() {
+    private fun onPreferenceChanged(maxAge: Int) {
         val defaultPlaylistUrl = resources.getString(R.string.default_playlist_url)
         preferences.getString(PLAYLIST_URL, defaultPlaylistUrl)?.let {
             if (lastPlaylistUrl != it) {
-                viewModel.downloadPlaylist(it)
+                viewModel.downloadPlaylist(it, maxAge)
                 lastPlaylistUrl = it
             }
         }
 
         preferences.getString(EPG_URL, null)?.let {
             if (lastEpgUrl != it) {
-                viewModel.downloadEPG(it)
+                viewModel.downloadEPG(it, maxAge)
                 lastEpgUrl = it
             }
         }
@@ -294,7 +294,7 @@ open class MainActivity : AppCompatActivity() {
     private fun updateTvgUrl(url: String) {
         if (preferences.getBoolean(PREFER_PLAYLIST_EPG, true)) {
             if (lastEpgUrl != url) {
-                viewModel.downloadEPG(url)
+                viewModel.downloadEPG(url, DEFAULT_MAX_AGE)
                 lastEpgUrl = url
             }
         }
@@ -349,5 +349,6 @@ open class MainActivity : AppCompatActivity() {
         const val PREV = -1
         const val NEXT = 1
         const val PROGRAM_INFO_TTL = 5 * 1000L // milliseconds
+        const val DEFAULT_MAX_AGE = 12
     }
 }
