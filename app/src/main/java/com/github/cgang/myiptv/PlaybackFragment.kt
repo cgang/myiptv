@@ -170,7 +170,6 @@ open class PlaybackFragment :
             Log.i(TAG, "Trying to play last URL: $lastUrl")
             preparePlay(lastUrl, lastMimeType)
         }
-        (requireActivity() as MainActivity).hideControls()
     }
 
     @OptIn(markerClass = [UnstableApi::class])
