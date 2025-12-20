@@ -108,11 +108,3 @@ class SmilUrlParser {
         return if (firstVideoSrc != null) listOf(firstVideoSrc) else videoUrls
     }
 }
-
-/**
- * Exception thrown when parsing a SMIL URL fails
- */
-class SmilUrlParseException : Exception {
-    constructor(message: String) : super(message)
-    constructor(message: String, cause: Throwable) : super(message, cause)
-}
