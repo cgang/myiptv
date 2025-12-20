@@ -23,16 +23,22 @@ A M3U URL is used to tell player where is the streaming source, it needs to be a
 #EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
 http://192.168.1.1:4022/udp/239.9.9.9:9999
 ```
-Use `x-tvg-url` to specify EPG URL to get EPG (in XMLTV format). 
+Use `x-tvg-url` to specify EPG URL to get EPG (in XMLTV format).
 Use `tvg-id` to match channel in EPG, there is no name match (yet).
 This player will try to open http://openwrt.lan/iptv.m3u by default.
+
+Individual channel URLs can also reference SMIL files:
+```
+#EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
+rtsp://server.example.com/stream.smil
+```
+When a channel URL ends with .smil or .smi, the player will automatically download and parse the SMIL file to extract the actual video URL for playback.
 
 ### EPG URL
 An optional EPG URL is used to tell player where is the EPG, it needs to point to a XMLTV file.
 
 ### Known Limitations
 - No channel selection by number
-- No support for SMIL playlist (by ExoPlayer)
 
 ## License
 This program is released under MIT license, see LICENSE for detail.
