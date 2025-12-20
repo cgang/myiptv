@@ -27,6 +27,8 @@ class Downloader(val context: Context) {
     private val client: OkHttpClient
     private val handler: Handler
 
+    private val smilHandler: SmilUrlHandler
+
     init {
         val thread = HandlerThread("download")
         thread.start()
@@ -37,6 +39,8 @@ class Downloader(val context: Context) {
         client = OkHttpClient.Builder()
             .cache(Cache(cacheDir, cacheSize))
             .build()
+
+        smilHandler = SmilUrlHandler(client)
     }
 
     fun register(l: Listener) {
@@ -53,28 +57,16 @@ class Downloader(val context: Context) {
                 // Process channels to resolve SMIL URLs
                 val processedChannels = parser.channels.map { channel ->
                     // Check if the channel URL is a SMIL URL
-                    if (SmilUrlHandler(client).isSmilUrl(channel.url ?: "")) {
+                    if (channel.url != null) {
                         try {
                             // Resolve the SMIL URL to get the actual video URL
-                            val resolvedUrl = SmilUrlHandler(client).resolveSmilUrl(channel.url ?: "")
-                            // Create a new channel with the resolved URL
-                            val resolvedChannel = Channel(channel.name)
-                            resolvedChannel.group = channel.group
-                            resolvedChannel.url = resolvedUrl
-                            resolvedChannel.logoUrl = channel.logoUrl
-                            resolvedChannel.tvgId = channel.tvgId
-                            resolvedChannel.tvgName = channel.tvgName
-                            resolvedChannel.mimeType = channel.mimeType
-                            resolvedChannel
+                            val videoUrls = smilHandler.resolveSmilUrls(channel.url ?: "")
+                            channel.videoUrls = videoUrls
                         } catch (e: Exception) {
                             Log.w(TAG, "Failed to resolve SMIL URL ${channel.url}: ${e.message}")
-                            // Return the original channel if resolution fails
-                            channel
                         }
-                    } else {
-                        // Not a SMIL URL, return as is
-                        channel
                     }
+                    channel
                 }
 
                 listener?.onChannels(parser.tvgUrl, processedChannels)

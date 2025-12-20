@@ -24,20 +24,19 @@ class SmilUrlHandler(private val client: OkHttpClient) {
      * For switch elements, returns the first (preferred) video URL
      */
     @Throws(SmilUrlParseException::class, IOException::class)
-    fun resolveSmilUrl(smilUrl: String): String {
+    fun resolveSmilUrls(smilUrl: String): List<String>? {
+        if (!isSmilUrl(smilUrl)) {
+            return null
+        }
+
         // Download the SMIL file
         val request = Request.Builder().url(smilUrl).build()
         client.newCall(request).execute().use { response ->
             if (response.isSuccessful) {
                 val parser = SmilUrlParser()
-                val videoUrls = parser.parseVideoUrls(response.body!!.byteStream())
-                
-                // Return the first video URL if available
-                if (videoUrls.isNotEmpty()) {
-                    return videoUrls[0]
-                } else {
-                    throw SmilUrlParseException("No video URLs found in SMIL file")
-                }
+                val videoUrls = parser.parseVideoUrls(response.body.byteStream())
+
+                return videoUrls
             } else {
                 throw IOException("Failed to download SMIL file: ${response.code}")
             }

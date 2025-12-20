@@ -3,6 +3,7 @@ package com.github.cgang.myiptv
 class Channel(val name: String) {
     var group: String? = null
     var url: String? = null
+    var videoUrls: List<String>? = null
     var logoUrl: String? = null // logo url
     var tvgId: String? = null // tvg channel id
     var tvgName: String? = null // tvg name
