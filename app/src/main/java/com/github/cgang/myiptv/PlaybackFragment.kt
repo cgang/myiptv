@@ -21,6 +21,8 @@ import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.github.cgang.myiptv.rtp.RtpMediaSource
+import com.github.cgang.myiptv.rtp.NetworkInterfaceUtils
 
 open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
@@ -144,12 +146,43 @@ open class PlaybackFragment :
         }
 
         try {
+            val context = context ?: return
             val item = MediaItem.Builder().setUri(url).setMimeType(mimeType).build()
-            exoPlayer?.setMediaItem(item)
+
+            // Check if this is an RTP multicast URL
+            if (url.startsWith("rtp://") || url.startsWith("udp://")) {
+                // Extract multicast address and port from URL
+                val multicastInfo = extractMulticastInfo(url)
+                if (multicastInfo != null) {
+                    val (interfaceName, address, port) = multicastInfo
+                    val rtpMediaSource = RtpMediaSource(interfaceName, address, port, context)
+                    exoPlayer?.setMediaSource(rtpMediaSource.createMediaSource(), 0) // Start from beginning
+                } else {
+                    // Throw an error if we can't extract multicast information for RTP/UDP URLs
+                    Log.e(TAG, "Unable to extract multicast information from URL: $url")
+                    throw IllegalArgumentException("Invalid RTP/UDP multicast URL format: $url")
+                }
+            } else {
+                // For non-RTP URLs, use default behavior
+                exoPlayer?.setMediaItem(item)
+            }
+
             Log.i(TAG, "Change last URL to $url")
             exoPlayer?.prepare()
             lastUrl = url
             lastMimeType = mimeType
+        } catch (e: IllegalArgumentException) {
+            // Handle RTP/UDP URL format errors specifically
+            Log.e(TAG, "RTP/UDP URL format error for " + url + ": " + e.message)
+            // Show an error dialog to the user
+            context?.let { ctx ->
+                androidx.appcompat.app.AlertDialog.Builder(ctx)
+                    .setTitle(R.string.play_error)
+                    .setMessage("Invalid RTP/UDP multicast URL format: ${e.message}")
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show()
+            }
         } catch (e: Exception) {
             Log.w(TAG, "Unable to play " + url + ": " + e.message)
         }
@@ -197,6 +230,52 @@ open class PlaybackFragment :
         activity?.getPreferences(Context.MODE_PRIVATE)?.edit()
             ?.putString(LAST_URL, lastUrl)?.apply()
         super.onStop()
+    }
+
+    /**
+     * Extracts multicast interface, address, and port from RTP/UDP URL
+     * Expected format: rtp://interface@address:port or udp://interface@address:port
+     * Or: rtp://address:port or udp://address:port (interface will be determined from settings or automatically)
+     */
+    private fun extractMulticastInfo(url: String): Triple<String, String, Int>? {
+        try {
+            // Handle both rtp:// and udp:// schemes
+            val cleanUrl = url.substringAfter("://")
+
+            // Check if interface is specified (format: interface@address:port)
+            val atParts = cleanUrl.split("@", limit = 2)
+            val interfaceName = if (atParts.size > 1) {
+                atParts[0] // Interface name before @
+            } else {
+                // Get interface from settings, fallback to automatic detection
+                val activity = activity as? MainActivity
+                val settingInterface = activity?.getMulticastInterface() ?: "auto"
+
+                if (settingInterface != "auto") {
+                    settingInterface // Use interface from settings
+                } else {
+                    // Try to determine the interface automatically using NetworkInterfaceUtils
+                    val context = context ?: return null
+                    NetworkInterfaceUtils.getMulticastInterface(context) ?: "eth0"
+                }
+            }
+
+            val addressPortPart = if (atParts.size > 1) atParts[1] else atParts[0]
+            val colonParts = addressPortPart.split(":", limit = 2)
+
+            if (colonParts.size != 2) {
+                Log.e(TAG, "Invalid address:port format in URL: $url")
+                return null
+            }
+
+            val address = colonParts[0]
+            val port = colonParts[1].toInt()
+
+            return Triple(interfaceName, address, port)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing multicast URL: $url", e)
+            return null
+        }
     }
 
     companion object {

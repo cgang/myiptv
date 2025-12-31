@@ -73,6 +73,13 @@ open class MainActivity : AppCompatActivity() {
         return text?.toInt() ?: 0
     }
 
+    fun getMulticastInterface(): String {
+        return preferences.getString(
+            MULTICAST_INTERFACE,
+            resources.getString(R.string.default_multicast_interface)
+        ) ?: resources.getString(R.string.default_multicast_interface)
+    }
+
     private fun hideSystemUI() {
         val decorView = window.decorView
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -346,6 +353,7 @@ open class MainActivity : AppCompatActivity() {
         const val BUFFER_DURATION = "BufferDuration"
         const val PREFER_PLAYLIST_EPG = "PreferPlaylistEPG"
         const val ENABLE_ALL_CHANNELS = "EnableAllChannelsGroup"
+        const val MULTICAST_INTERFACE = "MulticastInterface"
         const val PREV = -1
         const val NEXT = 1
         const val PROGRAM_INFO_TTL = 5 * 1000L // milliseconds

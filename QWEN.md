@@ -10,6 +10,7 @@ MyIPTV is a simple IPTV player for Android devices that utilizes Android Media3 
 - Channel grouping and browsing
 - Configurable buffer duration for smoother playback
 - Support for channels with MP2/MP3 audio codecs through FFmpeg extension
+- RTP over UDP multicast support for direct streaming
 
 ## Technology Stack
 
@@ -21,31 +22,48 @@ MyIPTV is a simple IPTV player for Android devices that utilizes Android Media3 
 - **Architecture**: MVVM with LiveData
 - **Build System**: Gradle with Kotlin DSL
 
-## Project Structure
+## Project Structure and Layout Conventions
+
+The project follows standard Android project structure with specific conventions for organizing code:
 
 ```
 app/
 ├── src/
-│   ├── main/
-│   │   ├── java/com/github/cgang/myiptv/
+│   ├── main/                    # Main application source code
+│   │   ├── java/com/github/cgang/myiptv/  # Application source code
+│   │   │   ├── rtp/             # RTP multicast implementation
 │   │   │   ├── xmltv/           # XMLTV parsing for EPG data
-│   │   │   ├── Channel.kt       # Data class for channel information
-│   │   │   ├── Downloader.kt    # Network operations for downloading playlists/EPG
-│   │   │   ├── M3UParser.kt     # Parser for M3U playlist files
-│   │   │   ├── MainActivity.kt  # Main entry point and primary activity
-│   │   │   ├── PlaybackFragment.kt # Media playback using ExoPlayer
-│   │   │   ├── Playlist.kt      # Data class for playlist information
-│   │   │   ├── PlaylistAdapter.kt # RecyclerView adapter for playlist display
-│   │   │   ├── PlaylistFragment.kt # Fragment for displaying channel list
-│   │   │   ├── PlaylistViewModel.kt # ViewModel for managing playlist data
-│   │   │   ├── ProgramAdapter.kt # Adapter for program information display
-│   │   │   ├── ProgramInfoFragment.kt # Fragment for showing EPG program info
-│   │   │   ├── SettingsActivity.kt # Activity for app settings
-│   │   │   └── SettingsFragment.kt # Fragment for settings UI
-│   │   └── res/                 # Resources (layouts, strings, drawables)
-│   └── libs/                   # FFmpeg extension AAR files
-└── build.gradle.kts            # Module-level build configuration
+│   │   │   └── ...              # Other application components
+│   │   └── res/                 # UI resources (layouts, strings, drawables, etc.)
+│   ├── test/                    # Unit tests
+│   │   └── java/com/github/cgang/myiptv/  # Test source code
+│   │       └── rtp/             # RTP multicast tests
+│   └── libs/                    # External libraries (FFmpeg extension AAR files)
+└── build.gradle.kts             # Module-level build configuration
 ```
+
+### Directory Conventions
+
+When contributing to this project, please follow these conventions:
+
+1. **`app/src/main/java/com/github/cgang/myiptv/`**: Main application source code
+   - Organize related functionality into sub-packages (e.g., `rtp/`, `xmltv/`)
+   - Place new features in appropriate sub-packages
+
+2. **`app/src/test/java/com/github/cgang/myiptv/`**: Unit tests
+   - All test files should be placed here, not in the main source tree
+   - Mirror the package structure of main source code
+
+3. **`app/src/main/res/`**: UI resources
+   - Layout files, drawables, values (strings, colors, themes), etc.
+   - Organized by resource type in standard Android directories
+
+4. **`app/src/main/res/xml/`**: Configuration files
+   - Preferences configuration (`preferences.xml`)
+   - Other XML configuration files
+
+5. **`app/libs/`**: External library files
+   - FFmpeg extension AAR files and other third-party libraries
 
 ## Core Components
 
@@ -63,6 +81,7 @@ Handles media playback using ExoPlayer:
 - Manages buffer duration settings
 - Handles playback errors
 - Persists last played channel
+- Supports RTP/UDP multicast streams
 
 ### PlaylistViewModel
 Manages application state:
@@ -83,6 +102,15 @@ Handles EPG data:
 - Maps programs to channels using tvg-id or channel name
 - Provides program scheduling information
 
+### RTP Package
+Handles RTP/UDP multicast streaming:
+- `RtpPacket.kt`: RTP packet parsing and header stripping
+- `RtpTransport.kt`: UDP multicast socket management
+- `RtpDataSource.kt`: DataSource for ExoPlayer integration
+- `RtpDataSourceFactory.kt`: Factory for creating RTP data sources
+- `RtpMediaSource.kt`: MediaSource for ExoPlayer integration
+- `NetworkInterfaceUtils.kt`: Network interface detection
+
 ## Configuration Options
 
 Users can configure the application through the settings menu:
@@ -91,6 +119,7 @@ Users can configure the application through the settings menu:
 3. **EPG URL**: Alternative XMLTV EPG URL
 4. **Enable "All Channels" group**: Shows all channels in a single group
 5. **Buffer duration**: Adjusts buffering time in milliseconds (default: 500ms)
+6. **Multicast Interface**: Select network interface for RTP/UDP multicast (default: auto-detect)
 
 ## Remote Control Navigation
 
@@ -125,19 +154,14 @@ Key libraries used in the project:
 3. **Cleartext Traffic**: Enabled to support HTTP streams (common in IPTV setups).
 4. **TV Optimization**: Supports both touch and Leanback interfaces, though Leanback launcher is commented out.
 5. **Data Persistence**: Remembers the last played channel using SharedPreferences.
-
-## Common Use Cases
-
-1. **Streaming Setup**: Configure M3U playlist URL pointing to IPTV service
-2. **EPG Integration**: Enable EPG through playlist TVG URL or separate XMLTV URL
-3. **Channel Browsing**: Navigate through channel groups using remote control
-4. **Performance Tuning**: Adjust buffer duration based on network conditions
+6. **Test Files**: Unit tests should be placed in `app/src/test/` directory, not in the main source tree.
 
 ## Known Limitations
 
 As documented in the README:
 - No channel selection by number
 - No support for SMIL playlists (by ExoPlayer)
+- RTP multicast support is experimental
 
 ## Entry Points
 

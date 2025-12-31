@@ -23,4 +23,9 @@
         android:title="@string/buffer_duration"
         app:useSimpleSummaryProvider="true"
         android:defaultValue="@string/default_buffer_duration"/>
+    <ListPreference
+        android:key="MulticastInterface"
+        android:title="@string/multicast_interface"
+        android:defaultValue="@string/default_multicast_interface"
+        app:useSimpleSummaryProvider="true"/>
 </PreferenceScreen>

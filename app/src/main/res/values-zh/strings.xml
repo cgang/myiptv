@@ -16,4 +16,6 @@
     <string name="prefer_tvg_url">优先使用播放列表内的EPG URL</string>
     <string name="all_channels">所有频道</string>
     <string name="enable_all_channels_group">启用“所有频道”组</string>
+    <string name="multicast_interface">组播接口</string>
+    <string name="default_multicast_interface" translatable="false">auto</string>
 </resources>

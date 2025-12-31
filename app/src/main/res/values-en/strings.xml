@@ -16,4 +16,6 @@
     <string name="prefer_tvg_url">Prefer EPG URL in playlist</string>
     <string name="all_channels">All Channels</string>
     <string name="enable_all_channels_group">Enable \"All Channels\" group</string>
+    <string name="multicast_interface">Multicast Interface</string>
+    <string name="default_multicast_interface" translatable="false">auto</string>
 </resources>
