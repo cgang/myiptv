@@ -2,6 +2,7 @@ package com.github.cgang.myiptv.rtp
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -12,28 +13,33 @@ import androidx.media3.datasource.DefaultDataSource
  */
 class RtpMediaSource(
     private val multicastInterface: String,
-    private val multicastAddress: String,
-    private val port: Int,
-    private val context: Context
+    private val mediaItem: MediaItem,
 ) {
+    companion object {
+        private const val TAG = "RtpMediaSource"
+    }
+
     fun createMediaSource(): MediaSource {
+        val uri = mediaItem.requestMetadata.mediaUri
+
+        if (uri == null) {
+            Log.e(TAG, "URI is null in media item")
+            throw IllegalArgumentException("URI is null in media item")
+        }
+
+        Log.d(TAG, "Creating RTP media source for interface: $multicastInterface, URI: $uri")
         val rtpDataSourceFactory = RtpDataSourceFactory(
             multicastInterface,
-            multicastAddress,
-            port
+            uri
         )
 
-        val defaultDataSourceFactory = DefaultDataSource.Factory(
-            context,
-            rtpDataSourceFactory
-        )
+        // Use the RTP data source factory directly instead of wrapping it in DefaultDataSource
+        // This ensures that RTP streams are handled by our custom data source
+        val progressiveMediaSourceFactory = ProgressiveMediaSource.Factory(rtpDataSourceFactory)
+        Log.d(TAG, "Progressive media source factory created")
 
-        // Create a progressive media source using our RTP data source
-        val mediaItem = MediaItem.fromUri(
-            Uri.parse("rtp://${multicastAddress}:${port}")
-        )
-
-        val progressiveMediaSourceFactory = ProgressiveMediaSource.Factory(defaultDataSourceFactory)
-        return progressiveMediaSourceFactory.createMediaSource(mediaItem)
+        val mediaSource = progressiveMediaSourceFactory.createMediaSource(mediaItem)
+        Log.d(TAG, "Media source created successfully")
+        return mediaSource
     }
 }

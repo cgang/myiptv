@@ -149,23 +149,31 @@ open class PlaybackFragment :
             return
         }
 
+        val url = channel.url!!
+        val mimeType = channel.mimeType
+        Log.d(TAG, "Preparing to play URL: $url with mime type: $mimeType")
         try {
             // Check if this is an RTP multicast URL
-            val rtpUrl = channel.getRtpUrl()
-            if (rtpUrl != null) {
-                val item = MediaItem.Builder().setUri(rtpUrl).setMimeType(channel.mimeType).build()
-                // Extract multicast address and port from URL
-                val multicastInfo = extractMulticastInfo(rtpUrl)
-                if (multicastInfo != null) {
-                    val (interfaceName, address, port) = multicastInfo
-                    val rtpMediaSource = RtpMediaSource(interfaceName, address, port, context)
-                    exoPlayer?.setMediaSource(rtpMediaSource.createMediaSource(), 0) // Start from beginning
+            if (url.startsWith("rtp://") || url.startsWith("udp://")) {
+                Log.d(TAG, "Detected RTP/UDP stream: $url")
+                val item = MediaItem.Builder().setUri(url).setMimeType(channel.mimeType).build()
+
+                // Get interface from settings, fallback to automatic detection
+                val activity = activity as? MainActivity
+                val settingInterface = activity?.getMulticastInterface() ?: "auto"
+                val interfaceName = if (settingInterface != "auto") {
+                    settingInterface // Use interface from settings
                 } else {
-                    // Throw an error if we can't extract multicast information for RTP/UDP URLs
-                    Log.e(TAG, "Unable to extract multicast information from URL: $rtpUrl")
-                    throw IllegalArgumentException("Invalid RTP/UDP multicast URL format: $rtpUrl")
+                    val context = context ?: return
+                    NetworkInterfaceUtils.getMulticastInterface(context) ?: "eth0"
                 }
+
+                Log.d(TAG, "Creating RTP media source for interface: $interfaceName, URL: $url")
+                val rtpMediaSource = RtpMediaSource(interfaceName, item)
+                exoPlayer?.setMediaSource(rtpMediaSource.createMediaSource(), 0) // Start from beginning
+                Log.d(TAG, "RTP media source set successfully")
             } else {
+                Log.d(TAG, "Using default media source for URL: $url")
                 // For non-RTP URLs, use default behavior
                 val items = buildMediaItems(channel)
                 exoPlayer?.setMediaItems(items)
@@ -241,51 +249,6 @@ open class PlaybackFragment :
         super.onStop()
     }
 
-    /**
-     * Extracts multicast interface, address, and port from RTP/UDP URL
-     * Expected format: rtp://interface@address:port or udp://interface@address:port
-     * Or: rtp://address:port or udp://address:port (interface will be determined from settings or automatically)
-     */
-    private fun extractMulticastInfo(url: String): Triple<String, String, Int>? {
-        try {
-            // Handle both rtp:// and udp:// schemes
-            val cleanUrl = url.substringAfter("://")
-
-            // Check if interface is specified (format: interface@address:port)
-            val atParts = cleanUrl.split("@", limit = 2)
-            val interfaceName = if (atParts.size > 1) {
-                atParts[0] // Interface name before @
-            } else {
-                // Get interface from settings, fallback to automatic detection
-                val activity = activity as? MainActivity
-                val settingInterface = activity?.getMulticastInterface() ?: "auto"
-
-                if (settingInterface != "auto") {
-                    settingInterface // Use interface from settings
-                } else {
-                    // Try to determine the interface automatically using NetworkInterfaceUtils
-                    val context = context ?: return null
-                    NetworkInterfaceUtils.getMulticastInterface(context) ?: "eth0"
-                }
-            }
-
-            val addressPortPart = if (atParts.size > 1) atParts[1] else atParts[0]
-            val colonParts = addressPortPart.split(":", limit = 2)
-
-            if (colonParts.size != 2) {
-                Log.e(TAG, "Invalid address:port format in URL: $url")
-                return null
-            }
-
-            val address = colonParts[0]
-            val port = colonParts[1].toInt()
-
-            return Triple(interfaceName, address, port)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing multicast URL: $url", e)
-            return null
-        }
-    }
 
     companion object {
         val TAG = PlaybackFragment::class.java.simpleName

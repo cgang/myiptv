@@ -1,5 +1,6 @@
 package com.github.cgang.myiptv.rtp
 
+import android.util.Log
 import java.nio.ByteBuffer
 
 /**
@@ -11,6 +12,8 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
         const val PROFILE_MPEGTS = 0x21
         const val PROFILE_MPEG_VIDEO = 0x20
         const val PROFILE_MPEG_AUDIO = 0x0E
+
+        private const val TAG = "RtpPacket"
     }
 
     var sequence: Int = 0
@@ -35,8 +38,12 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
 
         val payloadType = getByte(1) and 0x7F
         return when (payloadType) {
-            PROFILE_MPEGTS, PROFILE_MPEG_VIDEO, PROFILE_MPEG_AUDIO -> Pair(true, null)
-            else -> Pair(false, "Unknown payload profile: $payloadType")
+            PROFILE_MPEGTS, PROFILE_MPEG_VIDEO, PROFILE_MPEG_AUDIO -> {
+                Pair(true, null)
+            }
+            else -> {
+                Pair(false, "Unknown payload profile: $payloadType")
+            }
         }
     }
 
@@ -44,34 +51,34 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
      * Strips the RTP header from the packet
      */
     fun stripRtp() {
+        val signature = getByte(0) // Version (2 bits), padding (1 bit), extension (1 bit), CSRC count (4 bits)
         val payloadType = getByte(1)
-        sequence = getUint16(2).toInt()
+        sequence = getUint16(2)
 
         var newOffset = RTP_HEADER_SIZE
-        when (payloadType.toByte()) {
-            PROFILE_MPEGTS.toByte() -> {
-                // No additional offset for MPEG-TS
-            }
-            PROFILE_MPEG_VIDEO.toByte(), PROFILE_MPEG_AUDIO.toByte() -> {
-                newOffset += 4 // Skip 4 bytes for MPEG video/audio
-            }
-        }
 
-        val signature = getByte(0) // Signature bits
+        // Handle CSRC (Contributing Source) identifiers
         val csrcCount = signature and 0x0F // CSRC count
         if (csrcCount > 0) {
             newOffset += csrcCount * 4
         }
 
-        if ((signature and 0x10) != 0) { // Extension available - check for RTP header extensions
-            val extensionLength = getUint16(newOffset + 2) // Get extension header length (after 2 bytes for extension ID)
-            newOffset += 4 + extensionLength * 2 // 2 bytes for extension ID + 2 bytes for length, then extensionLength * 2 bytes for extension data
+        // Handle RTP header extension (if present)
+        if ((signature and 0x10) != 0) { // Extension bit is set
+            // Extension header is 4 bytes: 2 bytes for extension ID + 2 bytes for length
+            val extensionLength = getUint16(newOffset + 2) // Get the number of 16-bit words in extensions
+            newOffset += 4 + extensionLength * 2 // 4 bytes for extension header + extension data
         }
 
+        // Update offset to point to the payload
         offset = newOffset
-        if ((signature and 0x20) != 0) { // Padding
+
+        // Handle padding (if present)
+        if ((signature and 0x20) != 0) { // Padding bit is set
             val paddingSize = getByte(length - 1)
-            length -= paddingSize.toInt()
+            if (paddingSize > 0) {
+                length -= paddingSize
+            }
         }
     }
 
@@ -79,7 +86,8 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
      * Gets the next sequence number
      */
     fun nextSeq(): Int {
-        return (sequence + 1) and 0xFFFF // 16-bit wraparound
+        val next = (sequence + 1) and 0xFFFF // 16-bit wraparound
+        return next
     }
 
     private fun getByte(offset: Int): Int {

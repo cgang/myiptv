@@ -1,5 +1,6 @@
 package com.github.cgang.myiptv.rtp
 
+import android.net.Uri
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.TransferListener
 
@@ -8,12 +9,11 @@ import androidx.media3.datasource.TransferListener
  */
 class RtpDataSourceFactory(
     private val multicastInterface: String,
-    private val multicastAddress: String,
-    private val port: Int,
+    private val uri: Uri,
     private val transferListener: TransferListener? = null
 ) : DataSource.Factory {
     override fun createDataSource(): DataSource {
-        val rtpDataSource = RtpDataSource(multicastInterface, multicastAddress, port)
+        val rtpDataSource = RtpDataSource(multicastInterface, uri)
         transferListener?.let { rtpDataSource.addTransferListener(it) }
         return rtpDataSource
     }
