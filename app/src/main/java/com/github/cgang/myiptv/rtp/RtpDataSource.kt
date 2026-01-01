@@ -43,8 +43,10 @@ class RtpDataSource(
 
         coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-        // Start the RTP transport synchronously
-        val result = rtpTransport?.start()
+        // Start the RTP transport synchronously using runBlocking
+        val result = runBlocking {
+            rtpTransport?.start()
+        }
         if (result?.isFailure == true) {
             throw IOException("Failed to start RTP transport: ${result.exceptionOrNull()?.message}")
         }

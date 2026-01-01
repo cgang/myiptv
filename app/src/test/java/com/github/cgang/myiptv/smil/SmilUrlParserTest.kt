@@ -2,9 +2,12 @@ package com.github.cgang.myiptv.smil
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class SmilUrlParserTest {
-    
+
     @Test
     fun `parse simple SMIL with video URLs`() {
         val smilContent = """
@@ -16,15 +19,15 @@ class SmilUrlParserTest {
                 </body>
             </smil>
         """.trimIndent()
-        
+
         val parser = SmilUrlParser()
         val urls = parser.parseVideoUrls(smilContent)
-        
+
         assertEquals(2, urls.size)
         assertEquals("http://example.com/video1.mp4", urls[0])
         assertEquals("http://example.com/video2.mp4", urls[1])
     }
-    
+
     @Test
     fun `parse SMIL with switch element`() {
         val smilContent = """
@@ -38,10 +41,10 @@ class SmilUrlParserTest {
                 </body>
             </smil>
         """.trimIndent()
-        
+
         val parser = SmilUrlParser()
         val urls = parser.parseVideoUrls(smilContent)
-        
+
         assertEquals(1, urls.size)
         assertEquals("http://example.com/high_quality.mp4", urls[0])
     }
