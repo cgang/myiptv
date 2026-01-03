@@ -2,7 +2,9 @@ package com.github.cgang.myiptv.rtp
 
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.OptIn
 import androidx.media3.common.C
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
@@ -11,6 +13,7 @@ import java.io.IOException
 /**
  * A DataSource that reads RTP multicast streams
  */
+@UnstableApi
 class RtpDataSource(
     private val multicastInterface: String,
     private val uri: Uri
@@ -22,6 +25,7 @@ class RtpDataSource(
         private const val TAG = "RtpDataSource"
     }
 
+    @OptIn(UnstableApi::class)
     override fun open(dataSpec: DataSpec): Long {
         val address = uri.host
         val port = uri.port
