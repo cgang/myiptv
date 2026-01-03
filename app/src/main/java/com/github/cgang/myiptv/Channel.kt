@@ -23,4 +23,15 @@ class Channel(val name: String) {
     override fun toString(): String {
         return name
     }
+
+    fun getRtpUrl(): String? {
+        if (url == null) {
+            return null
+        }
+        if (url!!.startsWith("rtp://") || url!!.startsWith("udp://")) {
+            return url
+        } else {
+            return null
+        }
+    }
 }

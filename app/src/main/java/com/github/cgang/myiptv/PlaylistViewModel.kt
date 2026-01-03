@@ -149,7 +149,7 @@ class PlaylistViewModel(
         }
 
         var index = Playlist.indexOf(channels, url)
-        if (index < 0 || index >= total) {
+        if (index !in 0..<total) {
             return
         }
 
@@ -164,6 +164,21 @@ class PlaylistViewModel(
         if (channel != null) {
             this.playingChannel.value = channel
         }
+    }
+
+    fun getChannelByUrl(url: String): Channel? {
+        val channels = this.channels.get() ?: emptyList()
+        val total = channels.size
+        if (total <= 1) {
+            return null
+        }
+
+        var index = Playlist.indexOf(channels, url)
+        if (index !in 0..<total) {
+            return null
+        }
+
+        return channels.getOrNull(index)
     }
 
     override fun onPrograms(programs: Collection<Program>) {
