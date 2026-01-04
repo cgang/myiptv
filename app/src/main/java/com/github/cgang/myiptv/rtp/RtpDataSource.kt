@@ -8,7 +8,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
-import java.io.IOException
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
@@ -31,36 +30,14 @@ class RtpDataSource(
 
     @OptIn(UnstableApi::class)
     override fun open(dataSpec: DataSpec): Long {
-        val address = uri.host
-        val port = uri.port
-
-        if (address.isNullOrEmpty()) {
-            throw IOException("Invalid address in URI: $uri")
-        }
-
-        if (port == -1) {
-            throw IOException("Invalid port in URI: $uri")
-        }
-
-        Log.d(TAG, "Opening RTP data source for $uri on interface $multicastInterface")
-        // Create the RTP transport if it doesn't exist
         if (rtpTransport != null) {
             rtpTransport!!.stop()
             rtpTransport = null
         }
 
-        try {
-            rtpTransport = RtpTransport(packetQueue, multicastInterface, address, port)
-            Log.d(TAG, "RTP transport created successfully")
-        } catch (e: Exception) {
-            throw IOException("Failed to create RTP transport: ${e.message}", e)
-        }
-
-        // Start the RTP transport
-        try {
-            rtpTransport?.start()
-        } catch (e: Exception) {
-            throw IOException("Failed to start RTP transport: ${e.message}", e)
+        Log.d(TAG, "Opening RTP data source for $uri on interface $multicastInterface")
+        rtpTransport = RtpTransport(packetQueue, multicastInterface,  uri).apply {
+            start()
         }
 
         Log.i(TAG, "RTP data source for $uri opened successfully")
@@ -75,7 +52,6 @@ class RtpDataSource(
         } else {
             packetQueue.poll(10, TimeUnit.MILLISECONDS) ?: return 0 // no packet available
         }
-
 
         val count = packet.read(buffer, offset, length)
         if (packet.offset < packet.limit) {

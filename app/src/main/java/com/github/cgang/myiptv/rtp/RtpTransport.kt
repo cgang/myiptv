@@ -1,11 +1,12 @@
 package com.github.cgang.myiptv.rtp
 
+import android.net.Uri
 import android.util.Log
 import kotlinx.coroutines.*
+import java.io.IOException
 import java.net.DatagramPacket
 import java.net.InetAddress
 import java.net.MulticastSocket
-import java.util.Collections
 import java.util.concurrent.BlockingQueue
 import kotlin.coroutines.CoroutineContext
 
@@ -15,15 +16,15 @@ import kotlin.coroutines.CoroutineContext
  */
 class RtpTransport(
     private val packetQueue: BlockingQueue<RtpPacket>,
-    private val multicastInterface: String,
-    private val multicastAddress: String,
-    port: Int
+    multicastInterface: String,
+    uri: Uri,
 ) : CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
 
     private val multicastSocket: MulticastSocket
+    private val multicastAddress: InetAddress
 
     // Use a sorted list to maintain buffered packets in sequence order
     private val reordering = mutableListOf<RtpPacket>()
@@ -34,8 +35,17 @@ class RtpTransport(
     }
 
     init {
-        Log.d(TAG, "Initializing RtpTransport for $multicastAddress:$port on interface $multicastInterface")
-        val address = InetAddress.getByName(multicastAddress)
+        val address = uri.host
+        val port = uri.port
+        if (address.isNullOrEmpty()) {
+            throw IOException("Invalid address in URI: $uri")
+        }
+
+        if (port == -1) {
+            throw IOException("Invalid port in URI: $uri")
+        }
+
+        multicastAddress = InetAddress.getByName(address)
         multicastSocket = MulticastSocket(port).apply {
             // Try to get the network interface, but don't fail if it's not available
             runCatching {
@@ -44,11 +54,8 @@ class RtpTransport(
                 Log.d(TAG, "Setting network interface to: $multicastInterface")
                 networkInterface = it
             }.onFailure {
-                Log.w(TAG, "Could not set network interface to $multicastInterface: $it")
+                Log.w(TAG, "Could not get network interface $multicastInterface: $it")
             }
-
-            Log.d(TAG, "Joining multicast group: $multicastAddress")
-            joinGroup(address)
         }
     }
 
@@ -57,37 +64,34 @@ class RtpTransport(
      */
     fun start() {
         Log.d(TAG, "Starting RTP transport")
-        try {
-            // Read first packet to determine if it's RTP
-            val packet = readPacket()
-            val isRtp = packet.check()
 
-            if (isRtp) {
-                packet.stripRtp()
-                packetQueue.offer(packet)
+        Log.d(TAG, "Joining multicast group: $multicastAddress")
+        multicastSocket.joinGroup(multicastAddress)
 
-                launch {
-                    try {
-                        transferRtp(packet.nextSeq())
-                    } catch (e: Exception) {
-                        Log.d(TAG, "RTP packet transfer loop ended due to exception: ${e.message}")
-                    }
-                }
-            } else {
-                packetQueue.offer(packet)
-                launch {
-                    try {
-                        transferRaw()
-                    } catch (e: Exception) {
-                        Log.d(TAG, "Raw packet transfer loop ended due to exception: ${e.message}")
-                    }
+        // Read first packet to determine if it's RTP
+        val packet = readPacket()
+        val isRtp = packet.check()
+
+        if (isRtp) {
+            packet.stripRtp()
+            packetQueue.offer(packet)
+
+            launch {
+                try {
+                    transferRtp(packet.nextSeq())
+                } catch (e: Exception) {
+                    Log.d(TAG, "RTP packet transfer loop ended due to exception: ${e.message}")
                 }
             }
-
-            Log.d(TAG, "RTP transport started successfully")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error starting RTP transport: ${e.message}", e)
-            throw e
+        } else {
+            packetQueue.offer(packet)
+            launch {
+                try {
+                    transferRaw()
+                } catch (e: Exception) {
+                    Log.d(TAG, "Raw packet transfer loop ended due to exception: ${e.message}")
+                }
+            }
         }
     }
 
@@ -184,9 +188,8 @@ class RtpTransport(
     fun stop() {
         Log.d(TAG, "Stopping RTP transport")
         runCatching {
-            val address = InetAddress.getByName(multicastAddress)
             Log.d(TAG, "Leaving multicast group: $multicastAddress")
-            multicastSocket.leaveGroup(address)
+            multicastSocket.leaveGroup(multicastAddress)
             multicastSocket.close()
         }
         job.cancel()

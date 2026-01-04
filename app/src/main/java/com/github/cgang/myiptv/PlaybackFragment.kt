@@ -2,6 +2,7 @@ package com.github.cgang.myiptv
 
 import android.app.AlertDialog
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -26,6 +27,8 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.github.cgang.myiptv.rtp.NetworkInterfaceUtils
 import com.github.cgang.myiptv.rtp.RtpDataSourceFactory
+import androidx.core.net.toUri
+import androidx.media3.common.C
 
 open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
@@ -154,9 +157,7 @@ open class PlaybackFragment :
         try {
             // Check if this is an RTP multicast URL
             if (url.startsWith("rtp://") || url.startsWith("udp://")) {
-                Log.d(TAG, "Detected RTP/UDP stream: $url")
-
-                exoPlayer?.setMediaSource(createRtpMediaSource(url, mimeType), 0 )
+                exoPlayer?.setMediaSource(createRtpMediaSource(url, mimeType), C.TIME_UNSET )
                 Log.d(TAG, "RTP media source set successfully")
             } else {
                 Log.d(TAG, "Using default media source for URL: $url")
@@ -180,15 +181,9 @@ open class PlaybackFragment :
 
         // Get interface from settings, fallback to automatic detection
         val interfaceName = getMulticastInterface()
+        val rtpDataSourceFactory = RtpDataSourceFactory(interfaceName, url.toUri())
 
-        val uri = item.localConfiguration?.uri ?: throw IllegalStateException("uri not found")
-        Log.d(TAG, "Creating RTP media source for interface: $interfaceName, URL: $url")
-        val rtpDataSourceFactory = RtpDataSourceFactory(interfaceName, uri)
-
-        // Use the RTP data source factory directly instead of wrapping it in DefaultDataSource
-        // This ensures that RTP streams are handled by our custom data source
-        val progressiveMediaSourceFactory = ProgressiveMediaSource.Factory(rtpDataSourceFactory)
-        return progressiveMediaSourceFactory.createMediaSource(item)
+        return ProgressiveMediaSource.Factory(rtpDataSourceFactory).createMediaSource(item)
     }
 
     private fun getMulticastInterface(): String {
