@@ -8,6 +8,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
+import java.lang.IllegalStateException
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
@@ -17,10 +18,10 @@ import java.util.concurrent.TimeUnit
 @UnstableApi
 class RtpDataSource(
     private val multicastInterface: String,
-    private val uri: Uri
 ) : DataSource {
     private var rtpTransport: RtpTransport? = null
     private var lastPacket: RtpPacket? = null
+    private var uri: Uri? = null
     private val packetQueue = LinkedBlockingQueue<RtpPacket>(MAX_QUEUE_SIZE)
 
     companion object {
@@ -35,8 +36,9 @@ class RtpDataSource(
             rtpTransport = null
         }
 
+        uri = dataSpec.uri
         Log.d(TAG, "Opening RTP data source for $uri on interface $multicastInterface")
-        rtpTransport = RtpTransport(packetQueue, multicastInterface,  uri).apply {
+        rtpTransport = RtpTransport(packetQueue, multicastInterface, uri!!).apply {
             start()
         }
 
@@ -90,5 +92,7 @@ class RtpDataSource(
         Log.d(TAG, "Transfer listener added (not implemented)")
     }
 
-    override fun getUri(): Uri? = null
+    override fun getUri(): Uri? {
+        return uri
+    }
 }

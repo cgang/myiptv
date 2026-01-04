@@ -31,7 +31,7 @@ class RtpTransport(
 
     companion object {
         private const val TAG = "RtpTransport"
-        private const val MAX_BUFFER_SIZE = 256  // Maximum packets to buffer for reordering
+        private const val MAX_BUFFER_SIZE = 64  // Maximum packets to buffer for reordering
     }
 
     init {
@@ -63,8 +63,6 @@ class RtpTransport(
      * Starts the RTP transport (main loop)
      */
     fun start() {
-        Log.d(TAG, "Starting RTP transport")
-
         Log.d(TAG, "Joining multicast group: $multicastAddress")
         multicastSocket.joinGroup(multicastAddress)
 
@@ -122,7 +120,7 @@ class RtpTransport(
      */
     private suspend fun transferRtp(initialNextSeq: Int) {
         var nextSeq = initialNextSeq
-        Log.d(TAG, "Starting RTP packet transfer loop with nextSeq: $nextSeq")
+        Log.d(TAG, "Starting RTP packet transfer loop")
 
         while (true) {
             val packet = readPacket()
@@ -186,13 +184,11 @@ class RtpTransport(
      * Stops the RTP transport
      */
     fun stop() {
-        Log.d(TAG, "Stopping RTP transport")
         runCatching {
             Log.d(TAG, "Leaving multicast group: $multicastAddress")
             multicastSocket.leaveGroup(multicastAddress)
             multicastSocket.close()
         }
         job.cancel()
-        Log.d(TAG, "RTP transport stopped")
     }
 }

@@ -12,11 +12,10 @@ import androidx.media3.datasource.TransferListener
 @OptIn(UnstableApi::class)
 class RtpDataSourceFactory (
     private val multicastInterface: String,
-    private val uri: Uri,
     private val transferListener: TransferListener? = null
 ) : DataSource.Factory {
     override fun createDataSource(): DataSource {
-        val rtpDataSource = RtpDataSource(multicastInterface, uri)
+        val rtpDataSource = RtpDataSource(multicastInterface)
         transferListener?.let { rtpDataSource.addTransferListener(it) }
         return rtpDataSource
     }
