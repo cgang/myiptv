@@ -93,9 +93,8 @@ open class PlaybackFragment :
     @OptIn(markerClass = [UnstableApi::class])
     protected fun createLoadControl(bufMs: Int): DefaultLoadControl {
         val bufferMs = if (bufMs < MIN_BUFFER_DURATION) MIN_BUFFER_DURATION else if (bufMs > MAX_BUFFER_DURATION) MAX_BUFFER_DURATION else bufMs
-
         return DefaultLoadControl.Builder()
-            .setBufferDurationsMs(bufferMs, MAX_BUFFER_DURATION, bufferMs / 2, bufferMs)
+            .setBufferDurationsMs(bufferMs, bufferMs*10, bufferMs / 2, bufferMs)
             .setPrioritizeTimeOverSizeThresholds(true)
             .build()
     }

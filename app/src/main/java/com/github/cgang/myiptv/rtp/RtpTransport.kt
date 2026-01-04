@@ -30,7 +30,7 @@ class RtpTransport(
 
     companion object {
         private const val TAG = "RtpTransport"
-        private const val MAX_BUFFER_SIZE = 128  // Maximum packets to buffer for reordering
+        private const val MAX_BUFFER_SIZE = 256  // Maximum packets to buffer for reordering
     }
 
     init {
@@ -153,6 +153,8 @@ class RtpTransport(
         var nextSeq = packet.nextSeq()
         if (!packetQueue.offer(packet)) {
             Log.w(TAG, "Packet queue full, dropping packet: ${packet.sequence}")
+            packetQueue.clear()
+            reordering.clear()
             return nextSeq
         }
 
@@ -167,6 +169,8 @@ class RtpTransport(
 
             if (!packetQueue.offer(buffered)) {
                 Log.w(TAG, "Packet queue full, dropping packet: ${buffered.sequence}")
+                packetQueue.clear()
+                reordering.clear()
                 break
             }
         }

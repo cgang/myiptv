@@ -68,25 +68,39 @@ class RtpDataSource(
     }
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
-        if (lastPacket != null) {
-            val packet = lastPacket!!
-            val count = packet.read(buffer, offset, length)
-            if (packet.offset >= packet.limit) {
-                lastPacket = null
-            }
+        val packet = if (lastPacket != null) {
+            val last = lastPacket!!
+            lastPacket = null
+            last
+        } else {
+            packetQueue.poll(10, TimeUnit.MILLISECONDS) ?: return 0 // no packet available
+        }
+
+
+        val count = packet.read(buffer, offset, length)
+        if (packet.offset < packet.limit) {
+            lastPacket = packet
             return count
         }
 
+        var off = offset + count
+        var len = length - count
+        var bytesRead = count
 
-        // Poll a new packet from queue
-        val packet = packetQueue.poll(10, TimeUnit.MILLISECONDS) ?: return 0 // no packet available
-        val count = packet.read(buffer, offset, length)
-        // If there's more data in the packet, keep it for next read
-        if (packet.offset < packet.limit) {
-            lastPacket = packet
+        while (len > 0) {
+            val packet = packetQueue.poll() ?: break
+            val count = packet.read(buffer, off, len)
+            bytesRead += count
+            off += count
+            len -= count
+
+            if (packet.offset < packet.limit) {
+                lastPacket = packet
+                break
+            }
         }
 
-        return count
+        return bytesRead
     }
 
     override fun close() {
