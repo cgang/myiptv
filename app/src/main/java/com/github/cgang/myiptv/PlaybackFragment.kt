@@ -28,6 +28,7 @@ import androidx.media3.ui.PlayerView
 import com.github.cgang.myiptv.rtp.NetworkInterfaceUtils
 import com.github.cgang.myiptv.rtp.RtpDataSourceFactory
 import androidx.core.net.toUri
+import androidx.core.content.edit
 import androidx.media3.common.C
 
 open class PlaybackFragment :
@@ -41,8 +42,8 @@ open class PlaybackFragment :
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
         super.onCreate(savedInstanceState)
-        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-            lastUrl = it.getString(LAST_URL, null)
+        activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+            lastUrl = prefs.getString(LAST_URL, null)
             Log.i(TAG, "Loading last URL from preferences: $lastUrl")
         } ?: {
             Log.w(TAG, "Unable to get last URL from preferences.")
@@ -255,9 +256,9 @@ open class PlaybackFragment :
         exoPlayer = null
 
         Log.i(TAG, "Saving last URL: $lastUrl")
-        val activity = activity
-        activity?.getPreferences(Context.MODE_PRIVATE)?.edit()
-            ?.putString(LAST_URL, lastUrl)?.apply()
+        activity?.getPreferences(Context.MODE_PRIVATE)?.edit {
+            putString(LAST_URL, lastUrl)
+        }
         super.onStop()
     }
 

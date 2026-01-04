@@ -28,7 +28,7 @@ class RtpTest {
                 // Add some payload data
             ) + "Mock MPEG-TS payload data".toByteArray()
 
-            val rtpPacket = RtpPacket(mockRtpPacket)
+            val rtpPacket = RtpPacket(mockRtpPacket, mockRtpPacket.size)
 
             // Test packet validation
             rtpPacket.check()
