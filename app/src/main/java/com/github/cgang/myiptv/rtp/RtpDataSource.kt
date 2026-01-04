@@ -71,7 +71,7 @@ class RtpDataSource(
         if (lastPacket != null) {
             val packet = lastPacket!!
             val count = packet.read(buffer, offset, length)
-            if (packet.offset >= packet.length) {
+            if (packet.offset >= packet.limit) {
                 lastPacket = null
             }
             return count
@@ -82,7 +82,7 @@ class RtpDataSource(
         val packet = packetQueue.poll(10, TimeUnit.MILLISECONDS) ?: return 0 // no packet available
         val count = packet.read(buffer, offset, length)
         // If there's more data in the packet, keep it for next read
-        if (packet.offset < packet.length) {
+        if (packet.offset < packet.limit) {
             lastPacket = packet
         }
 

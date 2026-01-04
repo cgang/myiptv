@@ -37,7 +37,7 @@ class RtpTest {
 
             // Test RTP header stripping
             rtpPacket.stripRtp()
-            println("RTP header stripped. Offset: ${rtpPacket.offset}, Length: ${rtpPacket.length}")
+            println("RTP header stripped. Offset: ${rtpPacket.offset}, Length: ${rtpPacket.limit}")
 
             // Test sequence number handling
             val nextSeq = rtpPacket.nextSeq()

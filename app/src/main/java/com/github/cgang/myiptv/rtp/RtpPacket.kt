@@ -5,7 +5,7 @@ import java.io.IOException
 /**
  * Represents an RTP packet with utilities for parsing and stripping RTP headers
  */
-class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data.size)
+class RtpPacket(val data: ByteArray, var limit: Int)
     : Comparable<RtpPacket> {
     companion object {
         const val RTP_HEADER_SIZE = 12
@@ -29,14 +29,15 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
         }
     }
 
+    var offset: Int = 0
     var sequence: Int = 0
 
     /**
      * Checks if this is a valid RTP packet
      */
     fun check(): Boolean {
-        if (length < RTP_HEADER_SIZE) {
-            throw IOException("Invalid packet length: $length")
+        if (limit < RTP_HEADER_SIZE) {
+            throw IOException("Invalid packet length: $limit")
         }
 
         val signature = getByte(0)
@@ -88,9 +89,9 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
 
         // Handle padding (if present)
         if ((signature and 0x20) != 0) { // Padding bit is set
-            val paddingSize = getByte(length - 1)
+            val paddingSize = getByte(limit - 1)
             if (paddingSize > 0) {
-                length -= paddingSize
+                limit -= paddingSize
             }
         }
     }
@@ -112,7 +113,7 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
     }
 
     fun read(buffer: ByteArray, offset: Int, length: Int): Int {
-        val remaining = this.length - this.offset
+        val remaining = this.limit - this.offset
         val count = minOf(length, remaining)
         System.arraycopy(this.data, this.offset, buffer, offset, count)
         this.offset += count

@@ -99,11 +99,7 @@ class RtpTransport(
         val packet = DatagramPacket(buffer, buffer.size)
         multicastSocket.receive(packet)
 
-        return RtpPacket(
-            data = buffer,
-            offset = 0,
-            length = packet.length
-        )
+        return RtpPacket(buffer, packet.length)
     }
 
     /**
