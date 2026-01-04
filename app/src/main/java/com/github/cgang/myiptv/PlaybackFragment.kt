@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.viewModels
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -27,7 +26,6 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.github.cgang.myiptv.rtp.NetworkInterfaceUtils
 import com.github.cgang.myiptv.rtp.RtpDataSourceFactory
-import kotlin.getValue
 
 open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
@@ -159,7 +157,7 @@ open class PlaybackFragment :
             if (url.startsWith("rtp://") || url.startsWith("udp://")) {
                 Log.d(TAG, "Detected RTP/UDP stream: $url")
 
-                exoPlayer?.setMediaSource(createRtpMediaSource(url, mimeType), 0) // Start from beginning
+                exoPlayer?.setMediaSource(createRtpMediaSource(url, mimeType), 0 )
                 Log.d(TAG, "RTP media source set successfully")
             } else {
                 Log.d(TAG, "Using default media source for URL: $url")
@@ -172,6 +170,7 @@ open class PlaybackFragment :
             exoPlayer?.prepare()
             lastUrl = channel.url
         } catch (e: Exception) {
+            e.printStackTrace()
             Log.w(TAG, "Unable to play " + channel.url + ": " + e.message)
         }
     }
@@ -181,16 +180,9 @@ open class PlaybackFragment :
         val item = MediaItem.Builder().setUri(url).setMimeType(mimeType).build()
 
         // Get interface from settings, fallback to automatic detection
-        val activity = activity as? MainActivity
-        val settingInterface = activity?.getMulticastInterface() ?: "auto"
-        val interfaceName = if (settingInterface != "auto") {
-            settingInterface // Use interface from settings
-        } else {
-            val context = context ?: throw IllegalStateException()
-            NetworkInterfaceUtils.getMulticastInterface(context) ?: "eth0"
-        }
+        val interfaceName = getMulticastInterface()
 
-        val uri = item.requestMetadata.mediaUri ?: throw IllegalStateException()
+        val uri = item.localConfiguration?.uri ?: throw IllegalStateException("uri not found")
         Log.d(TAG, "Creating RTP media source for interface: $interfaceName, URL: $url")
         val rtpDataSourceFactory = RtpDataSourceFactory(interfaceName, uri)
 
@@ -198,6 +190,17 @@ open class PlaybackFragment :
         // This ensures that RTP streams are handled by our custom data source
         val progressiveMediaSourceFactory = ProgressiveMediaSource.Factory(rtpDataSourceFactory)
         return progressiveMediaSourceFactory.createMediaSource(item)
+    }
+
+    private fun getMulticastInterface(): String {
+        val activity = activity as? MainActivity
+        val settingInterface = activity?.getMulticastInterface() ?: "auto"
+        return if (settingInterface != "auto") {
+            settingInterface // Use interface from settings
+        } else {
+            val context = context ?: throw IllegalStateException("null context")
+            NetworkInterfaceUtils.getMulticastInterface(context) ?: "eth0"
+        }
     }
 
     private fun buildMediaItems(channel: Channel): List<MediaItem> {

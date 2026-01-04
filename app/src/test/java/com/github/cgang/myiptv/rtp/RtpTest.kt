@@ -31,11 +31,7 @@ class RtpTest {
             val rtpPacket = RtpPacket(mockRtpPacket)
 
             // Test packet validation
-            val (isRtp, error) = rtpPacket.check()
-            if (!isRtp) {
-                println("Error: Not detected as RTP packet: $error")
-                return
-            }
+            rtpPacket.check()
 
             println("RTP packet validation passed")
 

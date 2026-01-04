@@ -9,6 +9,8 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
 import java.io.IOException
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 /**
  * A DataSource that reads RTP multicast streams
@@ -20,9 +22,11 @@ class RtpDataSource(
 ) : DataSource {
     private var rtpTransport: RtpTransport? = null
     private var lastPacket: RtpPacket? = null
+    private val packetQueue = LinkedBlockingQueue<RtpPacket>(MAX_QUEUE_SIZE)
 
     companion object {
         private const val TAG = "RtpDataSource"
+        private const val MAX_QUEUE_SIZE = 128  // Limit the main packet queue size
     }
 
     @OptIn(UnstableApi::class)
@@ -31,32 +35,31 @@ class RtpDataSource(
         val port = uri.port
 
         if (address.isNullOrEmpty()) {
-            Log.e(TAG, "Invalid address in URI: $uri")
             throw IOException("Invalid address in URI: $uri")
         }
 
         if (port == -1) {
-            Log.e(TAG, "Invalid port in URI: $uri")
             throw IOException("Invalid port in URI: $uri")
         }
 
         Log.d(TAG, "Opening RTP data source for $uri on interface $multicastInterface")
         // Create the RTP transport if it doesn't exist
-        if (rtpTransport == null) {
-            try {
-                rtpTransport = RtpTransport(multicastInterface, address, port)
-                Log.d(TAG, "RTP transport created successfully")
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to create RTP transport: ${e.message}", e)
-                throw IOException("Failed to create RTP transport: ${e.message}", e)
-            }
+        if (rtpTransport != null) {
+            rtpTransport!!.stop()
+            rtpTransport = null
+        }
+
+        try {
+            rtpTransport = RtpTransport(packetQueue, multicastInterface, address, port)
+            Log.d(TAG, "RTP transport created successfully")
+        } catch (e: Exception) {
+            throw IOException("Failed to create RTP transport: ${e.message}", e)
         }
 
         // Start the RTP transport
         try {
             rtpTransport?.start()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start RTP transport: ${e.message}", e)
             throw IOException("Failed to start RTP transport: ${e.message}", e)
         }
 
@@ -65,43 +68,28 @@ class RtpDataSource(
     }
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
-        Log.i(TAG, "Reading RTP data with offset $offset, length $length")
-        // If we have last packet, return the remaining data
         if (lastPacket != null) {
             val packet = lastPacket!!
-            val remaining = packet.length - packet.offset
-            val count = minOf(length, remaining)
-            System.arraycopy(packet.data, packet.offset, buffer, offset, count)
-            packet.offset += count
+            val count = packet.read(buffer, offset, length)
             if (packet.offset >= packet.length) {
                 lastPacket = null
             }
             return count
         }
 
+
         // Poll a new packet from queue
-        val transport = rtpTransport ?: throw IOException("RTP transport not initialized")
-        val packet = transport.getNextPacket(100) // Use timeout to avoid blocking ExoPlayer thread
-
-        if (packet != null) {
-            val remaining = packet.length - packet.offset
-            val count = minOf(length, remaining)
-            System.arraycopy(packet.data, packet.offset, buffer, offset, count)
-            packet.offset += count
-            // If there's more data in the packet, keep it for next read
-            if (packet.offset < packet.length) {
-                lastPacket = packet
-            }
-
-            return count
-        } else {
-            // Throw exception otherwise
-            throw IOException("No RTP packet received within timeout")
+        val packet = packetQueue.poll(10, TimeUnit.MILLISECONDS) ?: return 0 // no packet available
+        val count = packet.read(buffer, offset, length)
+        // If there's more data in the packet, keep it for next read
+        if (packet.offset < packet.length) {
+            lastPacket = packet
         }
+
+        return count
     }
 
     override fun close() {
-        Log.i(TAG, "Closing RTP data source")
         rtpTransport?.stop()
         rtpTransport = null
         lastPacket = null

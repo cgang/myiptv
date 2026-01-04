@@ -1,19 +1,32 @@
 package com.github.cgang.myiptv.rtp
 
-import android.util.Log
-import java.nio.ByteBuffer
+import java.io.IOException
 
 /**
  * Represents an RTP packet with utilities for parsing and stripping RTP headers
  */
-class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data.size) {
+class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data.size)
+    : Comparable<RtpPacket> {
     companion object {
         const val RTP_HEADER_SIZE = 12
         const val PROFILE_MPEGTS = 0x21
         const val PROFILE_MPEG_VIDEO = 0x20
         const val PROFILE_MPEG_AUDIO = 0x0E
+        const val MTU_SIZE = 1500
 
-        private const val TAG = "RtpPacket"
+        // Helper function to compare sequence numbers with wraparound handling
+        // Returns -1 if seq1 < seq2, 0 if seq1 == seq2, 1 if seq1 > seq2, considering wraparound
+        fun compareSeq(seq1: Int, seq2: Int): Int {
+            if (seq1 == seq2) {
+                return 0
+            }
+
+            // Handle wraparound: if the difference is large, consider the possibility of wraparound
+            val diff = (seq1 - seq2) and 0xFFFF  // Ensure we're working with 16-bit values
+            // If the difference is between 1 and 0x7FFF (32767), then seq1 is higher
+            // If the difference is between 0x8000 (32768) and 0xFFFF (65535), then seq1 is lower
+            return if (diff in 1..0x7FFF) 1 else -1
+        }
     }
 
     var sequence: Int = 0
@@ -21,28 +34,28 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
     /**
      * Checks if this is a valid RTP packet
      */
-    fun check(): Pair<Boolean, String?> {
+    fun check(): Boolean {
         if (length < RTP_HEADER_SIZE) {
-            return Pair(false, "Invalid packet length: $length")
+            throw IOException("Invalid packet length: $length")
         }
 
         val signature = getByte(0)
         if (signature == 0x47) { // Magic number for MPEG-TS
-            return Pair(false, null) // Not RTP, it's MPEG-TS
+            return false // Not RTP, it's MPEG-TS
         }
 
         val version = (signature and 0xC0) shr 6
         if (version != 2) { // Only RTP version 2 is supported
-            return Pair(false, "Unsupported RTP version: $version")
+            throw IOException("Unsupported RTP version: $version")
         }
 
         val payloadType = getByte(1) and 0x7F
         return when (payloadType) {
             PROFILE_MPEGTS, PROFILE_MPEG_VIDEO, PROFILE_MPEG_AUDIO -> {
-                Pair(true, null)
+                true
             }
             else -> {
-                Pair(false, "Unknown payload profile: $payloadType")
+                throw IOException("Unknown payload profile: $payloadType")
             }
         }
     }
@@ -98,10 +111,16 @@ class RtpPacket(val data: ByteArray, var offset: Int = 0, var length: Int = data
         return (data[offset + 1].toInt() and 0xFF) or ((data[offset].toInt() and 0xFF) shl 8)
     }
 
-    /**
-     * Writes the packet data to the provided buffer
-     */
-    fun writeTo(buffer: ByteBuffer) {
-        buffer.put(data, offset, length - offset)
+    fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+        val remaining = this.length - this.offset
+        val count = minOf(length, remaining)
+        System.arraycopy(this.data, this.offset, buffer, offset, count)
+        this.offset += count
+        return count
+    }
+
+    override fun compareTo(other: RtpPacket): Int {
+        // Handle sequence number wraparound when comparing
+        return compareSeq(this.sequence, other.sequence)
     }
 }
