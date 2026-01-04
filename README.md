@@ -2,9 +2,9 @@
 This player is based on Android media3 ExoPlayer and FFmpeg library, to provide a simple player for IPTV user.
 
 ## Prerequisite
-- HTTP streaming server, such as udpxy that provides a HTTP support for IPTV.
+- RTP/UDP multicast streams provider.
+- (Optional) HTTP streaming server, such as udpxy that provides a HTTP support for IPTV.
 - (Optional) EPG provider
-- For direct RTP/UDP multicast streams, no HTTP relay server is required
 
 ## Compile
 Since there are IPTV source support MP2/MP3 audio only, and which is not supported by Android platform,
@@ -35,32 +35,15 @@ rtsp://server.example.com/stream.smil
 ```
 When a channel URL ends with .smil or .smi, the player will automatically download and parse the SMIL file to extract the actual video URL for playback.
 
-### RTP/UDP Multicast Support (Under Development)
-The player now supports direct RTP/UDP multicast streams without requiring an HTTP relay server. This feature is currently under development and should be considered experimental. You can specify multicast streams using the following formats:
-
-RTP multicast (with automatic interface detection):
+### RTP/UDP Multicast Support
+This feature is currently under development and should be considered experimental. You can specify multicast streams using the following formats:
 ```
 #EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
 rtp://239.9.9.9:9999
-```
-
-UDP multicast (with automatic interface detection):
-```
 #EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
 udp://239.9.9.9:9999
 ```
-
-RTP multicast (with specific interface):
-```
-#EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
-rtp://eth0@239.9.9.9:9999
-```
-
-UDP multicast (with specific interface):
-```
-#EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
-udp://wlan0@239.9.9.9:9999
-```
+You can specify multicast interface in settings.
 
 ### EPG URL
 An optional EPG URL is used to tell player where is the EPG, it needs to point to a XMLTV file.
