@@ -235,6 +235,8 @@ open class PlaybackFragment :
             if (channel != null) {
                 preparePlay(channel)
             }
+        } else {
+            Log.d(TAG, "last URL is empty")
         }
     }
 

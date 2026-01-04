@@ -30,31 +30,25 @@ class RtpTransport(
 
     companion object {
         private const val TAG = "RtpTransport"
-        private const val MAX_BUFFER_SIZE = 64  // Maximum packets to buffer for reordering
+        private const val MAX_BUFFER_SIZE = 128  // Maximum packets to buffer for reordering
     }
 
     init {
-        Log.d(
-            TAG,
-            "Initializing RtpTransport for $multicastAddress:$port on interface $multicastInterface"
-        )
+        Log.d(TAG, "Initializing RtpTransport for $multicastAddress:$port on interface $multicastInterface")
         val address = InetAddress.getByName(multicastAddress)
         multicastSocket = MulticastSocket(port).apply {
             // Try to get the network interface, but don't fail if it's not available
-            val networkInterface = runCatching {
+            runCatching {
                 java.net.NetworkInterface.getByName(multicastInterface)
-            }.getOrNull()
-
-            if (networkInterface != null) {
+            }.onSuccess {
                 Log.d(TAG, "Setting network interface to: $multicastInterface")
-                setNetworkInterface(networkInterface)
-            } else {
-                Log.w(TAG, "Could not set network interface to: $multicastInterface, using default")
+                networkInterface = it
+            }.onFailure {
+                Log.w(TAG, "Could not set network interface to $multicastInterface: $it")
             }
 
             Log.d(TAG, "Joining multicast group: $multicastAddress")
             joinGroup(address)
-            Log.d(TAG, "Successfully joined multicast group: $multicastAddress")
         }
     }
 
@@ -134,11 +128,10 @@ class RtpTransport(
             val packet = readPacket()
 
             packet.stripRtp()
-            val seq = packet.sequence
-
-            if (seq == nextSeq) {
+            val cmp = RtpPacket.compareSeq(nextSeq, packet.sequence)
+            if (cmp == 0) { // equal
                 nextSeq = enqueuePacket(packet)
-            } else if (RtpPacket.compareSeq(nextSeq, seq) > 0) {
+            } else if (cmp > 0) {
                 // Packet has smaller seq than nextSeq - ignore this packet (it's in passed time)
             } else {
                 // seq > nextSeq - out of order packet, add to temporary buffer
@@ -146,16 +139,12 @@ class RtpTransport(
                 if (index >= 0) {
                     reordering[index] = packet
                 } else {
-                    val insertionPoint =
-                        -index - 1  // Calculate insertion point from the negative return value
+                    val insertionPoint = -index - 1
                     reordering.add(insertionPoint, packet)
                 }
 
                 if (reordering.size >= MAX_BUFFER_SIZE) {
-                    Log.w(
-                        TAG,
-                        "Buffer full with ${reordering.size} packets, treating missing packets as lost..."
-                    )
+                    Log.w(TAG, "Buffer full with ${reordering.size} packets, treating missing packets as lost...")
 
                     val buffered = reordering.removeAt(0)  // Remove first (lowest sequence)
                     nextSeq = enqueuePacket(buffered)
@@ -199,7 +188,6 @@ class RtpTransport(
             Log.d(TAG, "Leaving multicast group: $multicastAddress")
             multicastSocket.leaveGroup(address)
             multicastSocket.close()
-            Log.d(TAG, "Multicast socket closed")
         }
         job.cancel()
         Log.d(TAG, "RTP transport stopped")

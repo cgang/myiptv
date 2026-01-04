@@ -26,7 +26,7 @@ class RtpDataSource(
 
     companion object {
         private const val TAG = "RtpDataSource"
-        private const val MAX_QUEUE_SIZE = 128  // Limit the main packet queue size
+        private const val MAX_QUEUE_SIZE = 4096
     }
 
     @OptIn(UnstableApi::class)
