@@ -8,6 +8,7 @@ import java.util.regex.Pattern
 class M3UParser {
     val channels = mutableListOf<Channel>()
     var tvgUrl: String? = null
+    var tvgFormat: String? = null  // Added to support specifying EPG format
 
     @Throws(IOException::class)
     fun parse(reader: Reader?) {
@@ -47,6 +48,9 @@ class M3UParser {
             when (m.group(1)) {
                 "x-tvg-url", "url-tvg" -> {
                     this.tvgUrl = m.group(2)
+                }
+                "x-tvg-format", "format-tvg" -> {  // Added to support specifying EPG format
+                    this.tvgFormat = m.group(2)
                 }
             }
         }

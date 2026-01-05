@@ -7,6 +7,7 @@ import android.util.Log
 import com.github.cgang.myiptv.smil.SmilUrlHandler
 import com.github.cgang.myiptv.xmltv.Program
 import com.github.cgang.myiptv.xmltv.ProgramParser
+import com.github.cgang.myiptv.epg.hunan.HunanEpgParser
 import okhttp3.Cache
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient
@@ -70,14 +71,22 @@ class Downloader(val context: Context) {
                 }
 
                 listener?.onChannels(parser.tvgUrl, processedChannels)
+
+                // If there's a TVG URL, download the EPG with the specified format
+                parser.tvgUrl?.let { tvgUrl ->
+                    downloadEPG(tvgUrl, maxAge, parser.tvgFormat)
+                }
             }
         }
     }
 
-    fun downloadEPG(urlStr: String, maxAge: Int) {
+    fun downloadEPG(urlStr: String, maxAge: Int, format: String? = null) {
         handler.post {
-            download(urlStr, maxAge) {
-                val programs = ProgramParser().parse(it)
+            download(urlStr, maxAge) { inputStream ->
+                val programs = when (format?.lowercase()) {
+                    "hndx" -> HunanEpgParser().parse(inputStream)
+                    else -> ProgramParser().parse(inputStream)  // Default to XMLTV
+                }
                 listener?.onPrograms(programs)
             }
         }

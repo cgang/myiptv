@@ -111,8 +111,8 @@ class PlaylistViewModel(
         return tvgUrl
     }
 
-    fun downloadEPG(url: String, maxAge: Int) {
-        downloader.downloadEPG(url, maxAge)
+    fun downloadEPG(url: String, maxAge: Int, format: String? = null) {
+        downloader.downloadEPG(url, maxAge, format)
     }
 
     fun getProgram(): LiveData<Program?> {
