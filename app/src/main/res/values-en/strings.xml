@@ -12,6 +12,13 @@
     <string name="epg_url">EPG URL</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
+    <string name="show_details">Show details</string>
+    <string name="hide_details">Hide details</string>
+    <string name="play_error_format_not_supported">Unable to play the selected channel. The media format is not supported.</string>
+    <string name="play_error_connection_timeout">Connection timeout. Please check your network connection.</string>
+    <string name="play_error_channel_not_found">Channel not found. The stream URL may be invalid.</string>
+    <string name="play_error_access_denied">Access denied. Please check your subscription or credentials.</string>
+    <string name="play_error_general">An error occurred while playing the channel.</string>
     <string name="buffer_duration">Buffer Duration (ms)</string>
     <string name="prefer_tvg_url">Prefer EPG URL in playlist</string>
     <string name="all_channels">All Channels</string>

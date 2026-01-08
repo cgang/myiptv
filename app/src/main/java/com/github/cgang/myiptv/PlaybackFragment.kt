@@ -28,6 +28,7 @@ import com.github.cgang.myiptv.rtp.NetworkInterfaceUtils
 import com.github.cgang.myiptv.rtp.RtpDataSourceFactory
 import androidx.core.content.edit
 import androidx.media3.common.C
+import com.github.cgang.myiptv.ErrorDialogHelper
 
 open class PlaybackFragment :
     Fragment(R.layout.playback), Player.Listener {
@@ -74,6 +75,7 @@ open class PlaybackFragment :
     // check aspect ratio
     private fun isTvAspectRatio(): Boolean {
         val dm = DisplayMetrics()
+        @Suppress("DEPRECATION")
         activity?.windowManager?.defaultDisplay?.getRealMetrics(dm)
         return dm.widthPixels > 0 && dm.widthPixels * 9 == dm.heightPixels * 16
     }
@@ -106,19 +108,53 @@ open class PlaybackFragment :
     @OptIn(markerClass = [UnstableApi::class])
     override fun onPlayerError(error: PlaybackException) {
         Log.w(TAG, "Error occurs while playing $lastUrl", error)
-        var message = error.message
+
+        // Create user-friendly message using string resources
+        val userMessage = when {
+            error.cause is UnrecognizedInputFormatException -> {
+                context?.getString(R.string.play_error_format_not_supported) ?: "Unable to play the selected channel. The media format is not supported."
+            }
+            error.message?.contains("timeout", ignoreCase = true) == true -> {
+                context?.getString(R.string.play_error_connection_timeout) ?: "Connection timeout. Please check your network connection."
+            }
+            error.message?.contains("404", ignoreCase = true) == true -> {
+                context?.getString(R.string.play_error_channel_not_found) ?: "Channel not found. The stream URL may be invalid."
+            }
+            error.message?.contains("authentication", ignoreCase = true) == true ||
+            error.message?.contains("unauthorized", ignoreCase = true) == true -> {
+                context?.getString(R.string.play_error_access_denied) ?: "Access denied. Please check your subscription or credentials."
+            }
+            else -> {
+                context?.getString(R.string.play_error_general) ?: "An error occurred while playing the channel."
+            }
+        }
+
+        // Create technical details
+        var technicalDetails = error.message ?: "Unknown error"
         val cause = error.cause
         if (cause is UnrecognizedInputFormatException) {
-            message = cause.message
+            val causeMessage = cause.message
+            if (!causeMessage.isNullOrEmpty()) {
+                technicalDetails = causeMessage
+            }
         } else if (cause != null) {
-            message += "\nCaused by $cause"
+            technicalDetails += "\nCaused by: $cause"
         }
-        AlertDialog.Builder(context)
-            .setTitle(R.string.play_error)
-            .setMessage(message)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setIcon(android.R.drawable.ic_dialog_alert)
-            .show()
+        technicalDetails += "\n\nError Type: ${error.javaClass.simpleName}"
+        technicalDetails += "\nError Code: ${error.errorCode}"
+        if (error.cause != null) {
+            technicalDetails += "\nCause: ${error.cause?.javaClass?.simpleName ?: "Unknown"}"
+        }
+
+        // Show improved error dialog
+        context?.let { ctx ->
+            ErrorDialogHelper.showErrorDialog(
+                ctx,
+                ctx.getString(R.string.play_error),
+                userMessage,
+                technicalDetails
+            )
+        }
     }
 
     @OptIn(markerClass = [UnstableApi::class])

@@ -12,6 +12,13 @@
     <string name="epg_url">EPG地址</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
+    <string name="show_details">显示详情</string>
+    <string name="hide_details">隐藏详情</string>
+    <string name="play_error_format_not_supported">无法播放所选频道。媒体格式不受支持。</string>
+    <string name="play_error_connection_timeout">连接超时。请检查您的网络连接。</string>
+    <string name="play_error_channel_not_found">未找到频道。流媒体URL可能无效。</string>
+    <string name="play_error_access_denied">访问被拒绝。请检查您的订阅或凭据。</string>
+    <string name="play_error_general">播放频道时发生错误。</string>
     <string name="buffer_duration">缓冲时长(毫秒)</string>
     <string name="prefer_tvg_url">优先使用播放列表内的EPG URL</string>
     <string name="all_channels">所有频道</string>

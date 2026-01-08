@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="user_message" type="id" />
+    <item name="technical_details" type="id" />
+    <item name="details_button" type="id" />
+    <item name="separator" type="id" />
+    <item name="scroll_view" type="id" />
+</resources>

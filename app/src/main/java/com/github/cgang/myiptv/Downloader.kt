@@ -99,12 +99,12 @@ class Downloader(val context: Context) {
             val request = Request.Builder().cacheControl(cc).url(urlStr).build()
             val response = client.newCall(request).execute()
             if (response.isSuccessful) {
-                response.body!!.use {
+                response.body.use {
                     handle(it.byteStream())
                 }
                 Log.d(TAG, "${urlStr} loaded successfully")
             } else {
-                Log.d(TAG, "Failed to download ${urlStr}: ${response.body!!.string()}")
+                Log.d(TAG, "Failed to download ${urlStr}: ${response.body.string()}")
             }
         } catch (e: IOException) {
             Log.w(TAG, "Failed to download ${urlStr}", e)
