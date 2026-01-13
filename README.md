@@ -11,6 +11,15 @@ Since there are IPTV source support MP2/MP3 audio only, and which is not support
 FFmpeg extensions is required to be complied, and the compiled AAR files can be put to app/libs/ folder.
 There is nothing need to be noted for compiling, as it's a very simple Android  application.
 
+### FFmpeg AAR
+Clone https://github.com/androidx/media and follow instructions in libraries/decoder\_ffmpeg/README.md
+Select needed encoder for your IPTV, for example, mp3, aac, ac-3
+After finished steps to compile ffmpeg, use following command to create FFmpeg AAR:
+```
+./gradlew extension-ffmpeg:assembleRelease
+```
+Copy the output AAR to your app/libs at the end.
+
 ## Usage
 Suppose you have a typical Android TV remote controller, you can use OK button to get the playlist,
 Left/Right button to switch group, and Up/Down to select channel.
