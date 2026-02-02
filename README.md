@@ -25,17 +25,23 @@ Suppose you have a typical Android TV remote controller, you can use OK button t
 Left/Right button to switch group, and Up/Down to select channel.
 To configure this application, use MENU button to open settings page.
 
-### M3U URL
+### M3U Playlist
 A M3U URL is used to tell player where is the streaming source, it needs to be a M3U file with following syntax:
 ```
 #EXTM3U
 #EXTM3U x-tvg-url="http://192.168.1.1/epg.xml"
 #EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
 http://192.168.1.1:4022/udp/239.9.9.9:9999
+#EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
+rtp://239.9.9.9:9999
+#EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
+udp://239.9.9.9:9999
 ```
-Use `x-tvg-url` to specify EPG URL to get EPG (in XMLTV format).
-Use `tvg-id` to match channel in EPG, there is no name match (yet).
+
 This player will try to open http://openwrt.lan/iptv.m3u by default.
+
+Use rtp:// or udp:// for RTP/UDP multicast support, please note multicast support is still experimental.
+You can specify multicast interface in settings from menu.
 
 Individual channel URLs can also reference SMIL files:
 ```
@@ -44,18 +50,11 @@ rtsp://server.example.com/stream.smil
 ```
 When a channel URL ends with .smil or .smi, the player will automatically download and parse the SMIL file to extract the actual video URL for playback.
 
-### RTP/UDP Multicast Support
-This feature is currently under development and should be considered experimental. You can specify multicast streams using the following formats:
-```
-#EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
-rtp://239.9.9.9:9999
-#EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
-udp://239.9.9.9:9999
-```
-You can specify multicast interface in settings.
-
 ### EPG URL
 An optional EPG URL is used to tell player where is the EPG, it needs to point to a XMLTV file.
+
+Use `x-tvg-url` to specify EPG URL to get EPG (in XMLTV format).
+Use `tvg-id` to match channel in EPG, there is no name match (yet).
 
 ### Known Limitations
 - No channel selection by number
