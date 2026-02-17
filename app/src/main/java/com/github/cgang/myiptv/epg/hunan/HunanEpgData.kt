@@ -29,7 +29,7 @@ data class PlaybillInfo(
  * Converts Hunan EPG Channel to the standard Program structure used by the app
  */
 fun Channel.toProgram(): Program {
-    val xmltvChannel = XmltvChannel(id, name)
+    val xmltvChannel = XmltvChannel(cNo, name)
     val programmes = mutableListOf<XmltvProgramme>()
 
     // If there's current playbill information, convert it to programme
