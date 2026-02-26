@@ -54,7 +54,7 @@ This is a standard Android application. No special build steps are required beyo
 | **OK** | Open playlist |
 | **Left/Right** | Switch channel groups |
 | **Up/Down** | Navigate channels |
-| **MENU** | Open settings |
+| **☰ MENU** | Open settings |
 
 ### M3U Playlist Format
 
@@ -105,7 +105,7 @@ Configure an optional EPG URL pointing to an XMLTV file:
 
 ## Configuration
 
-Access the settings page via the **MENU** button to configure:
+Access the settings page via the **☰ MENU** button to configure:
 
 - Custom M3U playlist URL
 - Multicast interface selection
