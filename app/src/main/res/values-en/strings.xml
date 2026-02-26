@@ -25,4 +25,20 @@
     <string name="enable_all_channels_group">Enable \"All Channels\" group</string>
     <string name="multicast_interface">Multicast Interface</string>
     <string name="default_multicast_interface" translatable="false">auto</string>
+    <string name="text_size">Text Size</string>
+    <string name="text_size_normal">Normal</string>
+    <string name="text_size_large">Large</string>
+    <string name="text_size_extra_large">Extra Large</string>
+    <string name="text_size_default" translatable="false">normal</string>
+
+    <string-array name="text_size_entries">
+        <item>@string/text_size_normal</item>
+        <item>@string/text_size_large</item>
+        <item>@string/text_size_extra_large</item>
+    </string-array>
+    <string-array name="text_size_values">
+        <item>normal</item>
+        <item>large</item>
+        <item>extra_large</item>
+    </string-array>
 </resources>

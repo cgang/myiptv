@@ -22,7 +22,23 @@
     <string name="buffer_duration">缓冲时长(毫秒)</string>
     <string name="prefer_tvg_url">优先使用播放列表内的EPG URL</string>
     <string name="all_channels">所有频道</string>
-    <string name="enable_all_channels_group">启用“所有频道”组</string>
+    <string name="enable_all_channels_group">启用"所有频道"组</string>
     <string name="multicast_interface">组播接口</string>
     <string name="default_multicast_interface" translatable="false">auto</string>
+    <string name="text_size">字体大小</string>
+    <string name="text_size_normal">正常</string>
+    <string name="text_size_large">大</string>
+    <string name="text_size_extra_large">超大</string>
+    <string name="text_size_default" translatable="false">normal</string>
+
+    <string-array name="text_size_entries">
+        <item>@string/text_size_normal</item>
+        <item>@string/text_size_large</item>
+        <item>@string/text_size_extra_large</item>
+    </string-array>
+    <string-array name="text_size_values">
+        <item>normal</item>
+        <item>large</item>
+        <item>extra_large</item>
+    </string-array>
 </resources>

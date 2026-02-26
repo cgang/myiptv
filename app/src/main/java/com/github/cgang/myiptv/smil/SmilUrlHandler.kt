@@ -10,15 +10,15 @@ import java.io.IOException
  * Helper class to handle SMIL URLs in M3U playlists
  */
 class SmilUrlHandler(private val client: OkHttpClient) {
-    
+
     /**
      * Check if a URL is a SMIL URL based on its extension
      */
     fun isSmilUrl(url: String): Boolean {
-        return url.endsWith(".smil", ignoreCase = true) || 
+        return url.endsWith(".smil", ignoreCase = true) ||
                url.endsWith(".smi", ignoreCase = true)
     }
-    
+
     /**
      * Resolve a SMIL URL to get the actual video URL(s)
      * For switch elements, returns the first (preferred) video URL

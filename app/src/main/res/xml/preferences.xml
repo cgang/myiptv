@@ -28,4 +28,11 @@
         android:title="@string/multicast_interface"
         android:defaultValue="@string/default_multicast_interface"
         app:useSimpleSummaryProvider="true"/>
+    <ListPreference
+        android:key="TextSize"
+        android:title="@string/text_size"
+        android:defaultValue="@string/text_size_default"
+        android:entries="@array/text_size_entries"
+        android:entryValues="@array/text_size_values"
+        app:useSimpleSummaryProvider="true"/>
 </PreferenceScreen>

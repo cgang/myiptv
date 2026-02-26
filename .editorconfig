@@ -1,0 +1,37 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# Top-most EditorConfig file
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Kotlin files
+[*.kt]
+indent_size = 4
+
+# Kotlin script files
+[*.kts]
+indent_size = 4
+
+# XML files
+[*.xml]
+indent_size = 4
+
+# Gradle Kotlin DSL files
+[*.gradle.kts]
+indent_size = 4
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+
+# YAML files
+[*.yml]
+indent_size = 2
