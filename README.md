@@ -1,33 +1,66 @@
-# A Simple IPTV player
-This player is based on Android media3 ExoPlayer and FFmpeg library, to provide a simple player for IPTV user.
+# MyIPTV - A Simple IPTV Player
 
-## Prerequisite
-- RTP/UDP multicast streams provider.
-- (Optional) HTTP streaming server, such as udpxy that provides a HTTP support for IPTV.
-- (Optional) EPG provider
+A lightweight IPTV player for Android TV built with Android Media3 ExoPlayer and FFmpeg library.
 
-## Compile
-Since there are IPTV source support MP2/MP3 audio only, and which is not supported by Android platform,
-FFmpeg extensions is required to be complied, and the compiled AAR files can be put to app/libs/ folder.
-There is nothing need to be noted for compiling, as it's a very simple Android  application.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Android%20TV-green.svg)
 
-### FFmpeg AAR
-Clone https://github.com/androidx/media and follow instructions in libraries/decoder\_ffmpeg/README.md
-Select needed encoder for your IPTV, for example, mp3, aac, ac-3
-After finished steps to compile ffmpeg, use following command to create FFmpeg AAR:
-```
-./gradlew extension-ffmpeg:assembleRelease
-```
-Copy the output AAR to your app/libs at the end.
+## Features
+
+- 📺 M3U playlist support with EPG integration
+- 🎬 Support for MP2/MP3 audio streams via FFmpeg
+- 🌐 RTP/UDP multicast streaming
+- 🔧 Easy configuration via settings menu
+- 📱 Optimized for Android TV remote control
+
+## Prerequisites
+
+- **Required**: RTP/UDP multicast streams provider
+- **Optional**: HTTP streaming server (e.g., [udpxy](https://github.com/pch/udpxy)) for HTTP-based IPTV
+- **Optional**: EPG provider for program guide data
+
+## Build Instructions
+
+### FFmpeg AAR Setup
+
+Since some IPTV sources use MP2/MP3 audio (not natively supported by Android), FFmpeg extensions are required.
+
+1. Clone the [AndroidX Media](https://github.com/androidx/media) repository:
+   ```bash
+   git clone https://github.com/androidx/media.git
+   ```
+
+2. Follow the instructions in `libraries/decoder_ffmpeg/README.md`
+
+3. Select the required audio encoders for your IPTV source (e.g., `mp3`, `aac`, `ac-3`)
+
+4. Build FFmpeg and generate the AAR:
+   ```bash
+   ./gradlew extension-ffmpeg:assembleRelease
+   ```
+
+5. Copy the generated AAR file to `app/libs/`
+
+### Building the App
+
+This is a standard Android application. No special build steps are required beyond the FFmpeg setup.
 
 ## Usage
-Suppose you have a typical Android TV remote controller, you can use OK button to get the playlist,
-Left/Right button to switch group, and Up/Down to select channel.
-To configure this application, use MENU button to open settings page.
 
-### M3U Playlist
-A M3U URL is used to tell player where is the streaming source, it needs to be a M3U file with following syntax:
-```
+### Remote Control Navigation
+
+| Button | Action |
+|--------|--------|
+| **OK** | Open playlist |
+| **Left/Right** | Switch channel groups |
+| **Up/Down** | Navigate channels |
+| **MENU** | Open settings |
+
+### M3U Playlist Format
+
+Configure an M3U URL as your streaming source. The playlist should follow this format:
+
+```m3u
 #EXTM3U
 #EXTM3U x-tvg-url="http://192.168.1.1/epg.xml"
 #EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
@@ -38,26 +71,51 @@ rtp://239.9.9.9:9999
 udp://239.9.9.9:9999
 ```
 
-This player will try to open http://openwrt.lan/iptv.m3u by default.
+**Default URL**: `http://openwrt.lan/iptv.m3u`
 
-Use rtp:// or udp:// for RTP/UDP multicast support, please note multicast support is still experimental.
-You can specify multicast interface in settings from menu.
+#### Supported Protocols
 
-Individual channel URLs can also reference SMIL files:
-```
+- `http://` - HTTP streaming
+- `rtp://` / `udp://` - RTP/UDP multicast (experimental)
+  - Configure multicast interface in settings
+- `rtsp://` - RTSP streaming (SMIL file support)
+
+#### SMIL File Support
+
+Channels can reference SMIL files for dynamic stream URLs:
+
+```m3u
 #EXTINF:-1 tvg-id="1" group-title="Group",Channel Name
 rtsp://server.example.com/stream.smil
 ```
-When a channel URL ends with .smil or .smi, the player will automatically download and parse the SMIL file to extract the actual video URL for playback.
 
-### EPG URL
-An optional EPG URL is used to tell player where is the EPG, it needs to point to a XMLTV file.
+When a channel URL ends with `.smil` or `.smi`, the player automatically downloads and parses the SMIL file to extract the actual video URL.
 
-Use `x-tvg-url` to specify EPG URL to get EPG (in XMLTV format).
-Use `tvg-id` to match channel in EPG, there is no name match (yet).
+### EPG (Electronic Program Guide)
 
-### Known Limitations
-- No channel selection by number
+Configure an optional EPG URL pointing to an XMLTV file:
+
+- Use `x-tvg-url` in the M3U file to specify the EPG source
+- Use `tvg-id` to match channels with EPG entries (no name matching yet)
+
+## Known Limitations
+
+- ❌ No channel selection by number input
+- ⚠️ Multicast support is experimental
+
+## Configuration
+
+Access the settings page via the **MENU** button to configure:
+
+- Custom M3U playlist URL
+- Multicast interface selection
+- EPG source URL
+- Other playback preferences
 
 ## License
-This program is released under MIT license, see LICENSE for detail.
+
+This project is released under the [MIT License](LICENSE).
+
+---
+
+📖 [中文版本](README.zh.md)
