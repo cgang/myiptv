@@ -32,6 +32,11 @@
     <string name="text_size_large">Large</string>
     <string name="text_size_extra_large">Extra Large</string>
     <string name="text_size_default" translatable="false">normal</string>
+    <string name="loading">Loading…</string>
+    <string name="loading_playlist">Loading playlist…</string>
+    <string name="loading_epg">Loading EPG…</string>
+    <string name="error_loading_playlist">Error loading playlist</string>
+    <string name="no_channels_found">No channels found</string>
 
     <string-array name="text_size_entries">
         <item>@string/text_size_normal</item>

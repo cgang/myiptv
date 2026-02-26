@@ -30,6 +30,13 @@ class PlaylistViewModel(
 
     private val downloader = Downloader(application.applicationContext)
 
+    // Loading state
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    private val _loadingMessage = MutableLiveData<String>()
+    val loadingMessage: LiveData<String> = _loadingMessage
+
     init {
         downloader.register(this)
     }
@@ -96,6 +103,8 @@ class PlaylistViewModel(
     }
 
     fun downloadPlaylist(url: String, maxAge: Int) {
+        _isLoading.value = true
+        _loadingMessage.value = application.getString(R.string.loading_playlist)
         downloader.downloadPlaylist(url, maxAge)
     }
 
@@ -112,6 +121,8 @@ class PlaylistViewModel(
     }
 
     fun downloadEPG(url: String, maxAge: Int, format: String? = null) {
+        _isLoading.value = true
+        _loadingMessage.value = application.getString(R.string.loading_epg)
         downloader.downloadEPG(url, maxAge, format)
     }
 
@@ -197,6 +208,11 @@ class PlaylistViewModel(
             }
         }
         this.programMap.set(programMap)
+    }
+
+    override fun onLoadComplete() {
+        _isLoading.postValue(false)
+        _loadingMessage.postValue(null)
     }
 
     companion object {

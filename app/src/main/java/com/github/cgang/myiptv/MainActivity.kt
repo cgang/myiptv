@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -31,6 +32,8 @@ open class MainActivity : AppCompatActivity() {
     private var lastPlaylistUrl: String? = null
     private var lastEpgUrl: String? = null
     private var programInfoExpired: Long = 0L
+    private var channelNumberInput = StringBuilder()
+    private var channelNumberTimeout: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
@@ -60,6 +63,14 @@ open class MainActivity : AppCompatActivity() {
         }
         viewModel.getProgram().observe(this) {
             updateProgramInfo(it)
+        }
+
+        // Observe loading state
+        viewModel.isLoading.observe(this) { isLoading ->
+            showLoadingIndicator(isLoading)
+        }
+        viewModel.loadingMessage.observe(this) { message ->
+            updateLoadingMessage(message)
         }
 
         onPreferenceChanged(DEFAULT_MAX_AGE)
@@ -239,6 +250,15 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        // Handle channel number input (0-9)
+        if (keyCode in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9) {
+            val digit = keyCode - KeyEvent.KEYCODE_0
+            channelNumberInput.append(digit)
+            channelNumberTimeout = System.currentTimeMillis() + CHANNEL_NUMBER_TIMEOUT_MS
+            Log.d(TAG, "Channel number input: $channelNumberInput")
+            return true
+        }
+
         return when (keyCode) {
             KeyEvent.KEYCODE_CHANNEL_UP, KeyEvent.KEYCODE_CHANNEL_DOWN -> {
                 return true
@@ -249,6 +269,23 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        // Check if channel number timeout has expired
+        if (channelNumberInput.isNotEmpty() && System.currentTimeMillis() > channelNumberTimeout) {
+            channelNumberInput.clear()
+        }
+
+        // Handle Enter key for channel number input
+        if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+            if (channelNumberInput.isNotEmpty()) {
+                val channelNumber = channelNumberInput.toString().toIntOrNull()
+                if (channelNumber != null) {
+                    switchToChannelByNumber(channelNumber)
+                }
+                channelNumberInput.clear()
+                return true
+            }
+        }
+
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             showConfig()
             return true
@@ -334,6 +371,24 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun switchToChannelByNumber(channelNumber: Int) {
+        val playlist = viewModel.getPlaylist().value
+        if (playlist == null || playlist.channels.isEmpty()) {
+            Log.w(TAG, "Playlist not available")
+            return
+        }
+
+        // Channel numbers are typically 1-based
+        val index = channelNumber - 1
+        if (index >= 0 && index < playlist.channels.size) {
+            val channel = playlist.channels[index]
+            Log.i(TAG, "Switching to channel $channelNumber: ${channel.name}")
+            viewModel.switchChannel(channel)
+        } else {
+            Log.w(TAG, "Channel number $channelNumber out of range (1-${playlist.channels.size})")
+        }
+    }
+
     private fun updateProgramInfo(program: Program?) {
         if (program == null) {
             return
@@ -343,6 +398,20 @@ open class MainActivity : AppCompatActivity() {
             if (it.setProgram(program)) {
                 showProgramInfo(it)
             }
+        }
+    }
+
+    private fun showLoadingIndicator(show: Boolean) {
+        val loadingIndicator = findViewById<View>(R.id.loading_indicator)
+        if (loadingIndicator != null) {
+            loadingIndicator.visibility = if (show) View.VISIBLE else View.GONE
+        }
+    }
+
+    private fun updateLoadingMessage(message: String?) {
+        val loadingText = findViewById<TextView>(R.id.loading_text)
+        if (loadingText != null && message != null) {
+            loadingText.text = message
         }
     }
 
@@ -358,5 +427,6 @@ open class MainActivity : AppCompatActivity() {
         const val NEXT = 1
         const val PROGRAM_INFO_TTL = 5 * 1000L // milliseconds
         const val DEFAULT_MAX_AGE = 12
+        const val CHANNEL_NUMBER_TIMEOUT_MS = 3000L // 3 seconds timeout for channel number input
     }
 }

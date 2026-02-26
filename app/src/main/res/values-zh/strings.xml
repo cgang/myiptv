@@ -30,6 +30,11 @@
     <string name="text_size_large">大</string>
     <string name="text_size_extra_large">超大</string>
     <string name="text_size_default" translatable="false">normal</string>
+    <string name="loading">加载中…</string>
+    <string name="loading_playlist">正在加载播放列表…</string>
+    <string name="loading_epg">正在加载 EPG…</string>
+    <string name="error_loading_playlist">加载播放列表失败</string>
+    <string name="no_channels_found">未找到频道</string>
 
     <string-array name="text_size_entries">
         <item>@string/text_size_normal</item>

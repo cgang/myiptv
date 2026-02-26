@@ -22,6 +22,8 @@ class Downloader(val context: Context) {
         fun onChannels(tvgUrl: String?, channels: List<Channel>)
 
         fun onPrograms(programs: Collection<Program>)
+
+        fun onLoadComplete()
     }
 
     private var listener: Listener? = null
@@ -76,6 +78,9 @@ class Downloader(val context: Context) {
                 parser.tvgUrl?.let { tvgUrl ->
                     downloadEPG(tvgUrl, maxAge, parser.tvgFormat)
                 }
+
+                // Notify load complete
+                listener?.onLoadComplete()
             }
         }
     }
@@ -88,6 +93,7 @@ class Downloader(val context: Context) {
                     else -> ProgramParser().parse(inputStream)  // Default to XMLTV
                 }
                 listener?.onPrograms(programs)
+                listener?.onLoadComplete()
             }
         }
     }
