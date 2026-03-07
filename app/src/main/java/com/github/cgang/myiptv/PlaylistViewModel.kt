@@ -212,7 +212,7 @@ class PlaylistViewModel(
 
     override fun onLoadComplete() {
         _isLoading.postValue(false)
-        _loadingMessage.postValue(null)
+        _loadingMessage.postValue("")
     }
 
     companion object {

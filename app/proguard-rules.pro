@@ -33,7 +33,7 @@
 -keep class com.github.cgang.myiptv.smil.** { *; }
 
 # Keep Kotlin metadata
--keepAttributes *Annotation*
+-keepattributes *Annotation*
 -keepclassmembers class ** {
     @org.jetbrains.annotations.NotNull *;
     @org.jetbrains.annotations.Nullable *;
