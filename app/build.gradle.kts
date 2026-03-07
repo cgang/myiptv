@@ -12,8 +12,8 @@ android {
         applicationId = "com.github.cgang.myiptv"
         minSdk = 23
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.2.1"
+        versionCode = 11
+        versionName = "1.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
