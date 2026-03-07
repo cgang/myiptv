@@ -9,8 +9,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
+        // Allow file path or URL input for playlist
         findPreference<EditTextPreference>("PlaylistUrl")?.setOnBindEditTextListener {
-            it.inputType = InputType.TYPE_TEXT_VARIATION_URI
+            it.inputType = InputType.TYPE_TEXT_VARIATION_URI or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
         }
 
         findPreference<EditTextPreference>("EPGUrl")?.setOnBindEditTextListener {

@@ -12,6 +12,8 @@ import okhttp3.Cache
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -44,6 +46,20 @@ class Downloader(val context: Context) {
             .build()
 
         smilHandler = SmilUrlHandler(client)
+    }
+
+    /**
+     * Check if the given string looks like a local file path.
+     * A local path is detected if it:
+     * - Starts with "/" (absolute path)
+     * - Starts with "./" or "../" (relative path)
+     * - Starts with "file://" URI scheme
+     */
+    private fun isLocalPath(url: String): Boolean {
+        return url.startsWith("/") ||
+                url.startsWith("./") ||
+                url.startsWith("../") ||
+                url.startsWith("file://")
     }
 
     fun register(l: Listener) {
@@ -99,6 +115,13 @@ class Downloader(val context: Context) {
     }
 
     private fun download(urlStr: String, maxAge: Int, handle: (input: InputStream) -> Unit) {
+        // Check if this is a local file path
+        if (isLocalPath(urlStr)) {
+            downloadLocalFile(urlStr, handle)
+            return
+        }
+
+        // Otherwise, download from network
         try {
             Log.d(TAG, "Downloading ${urlStr}")
             val cc = CacheControl.Builder().maxAge(maxAge, TimeUnit.HOURS).build()
@@ -116,6 +139,35 @@ class Downloader(val context: Context) {
             Log.w(TAG, "Failed to download ${urlStr}", e)
         } catch (e: Exception) {
             Log.w(TAG, "Failed to process ${urlStr}", e)
+        }
+    }
+
+    private fun downloadLocalFile(urlStr: String, handle: (input: InputStream) -> Unit) {
+        try {
+            // Handle file:// URI scheme
+            val filePath = if (urlStr.startsWith("file://")) {
+                urlStr.substring("file://".length)
+            } else {
+                urlStr
+            }
+
+            Log.d(TAG, "Reading local file: ${filePath}")
+            val file = File(filePath)
+            if (!file.exists()) {
+                Log.w(TAG, "Local file does not exist: ${filePath}")
+                return
+            }
+            if (!file.canRead()) {
+                Log.w(TAG, "Cannot read local file: ${filePath}")
+                return
+            }
+
+            FileInputStream(file).use {
+                handle(it)
+            }
+            Log.d(TAG, "Local file ${filePath} loaded successfully")
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to read local file ${urlStr}", e)
         }
     }
 
