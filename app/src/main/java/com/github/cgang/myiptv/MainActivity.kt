@@ -46,7 +46,14 @@ open class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onCreate()")
         Log.d(TAG, "Device type: ${if (isTvDevice) "TV" else "Handheld"} (UI mode detection)")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.main_activity)
+
+        // Use TV-specific layout for TV devices to avoid playlist positioning issues
+        val layoutResId = if (isTvDevice) {
+            R.layout.main_activity_tv
+        } else {
+            R.layout.main_activity_handheld
+        }
+        setContentView(layoutResId)
 
         // Use appropriate playlist fragment based on device type
         val playlistFragment = if (isTvDevice) {
