@@ -46,9 +46,17 @@ open class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Device type: ${if (isTvDevice) "TV" else "Handheld"} (UI mode detection)")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+
+        // Use appropriate playlist fragment based on device type
+        val playlistFragment = if (isTvDevice) {
+            TvPlaylistFragment.create()
+        } else {
+            HandheldPlaylistFragment.create()
+        }
+
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.playlist_fragment, PlaylistFragment(viewModel))
+            .add(R.id.playlist_fragment, playlistFragment)
             .add(R.id.program_info_fragment, ProgramInfoFragment(this))
             .commit()
 
@@ -181,9 +189,9 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun playlistFrag(): PlaylistFragment? {
+    private fun playlistFrag(): BasePlaylistFragment? {
         val frag = supportFragmentManager.findFragmentById(R.id.playlist_fragment)
-        return if (frag is PlaylistFragment) frag else null
+        return if (frag is BasePlaylistFragment) frag else null
     }
 
     private fun playbackFrag(): PlaybackFragment? {
