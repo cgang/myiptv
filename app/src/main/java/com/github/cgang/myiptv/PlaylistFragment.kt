@@ -15,12 +15,16 @@ import com.github.cgang.myiptv.xmltv.Program
 
 class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
     private val viewModel = model
+    private var isHandheldDevice = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val context = requireContext()
         val channelAdapter = PlaylistAdapter(context, R.layout.channel_item)
         super.setListAdapter(channelAdapter)
+
+        // Detect device type for layout selection
+        isHandheldDevice = !DeviceUtils.isTv(context)
 
         viewModel.getProgram().observe(this) {
             updateProgram(it)
@@ -33,24 +37,41 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        val view = inflater.inflate(R.layout.playlist, container, false)
-        Log.i(TAG, "onCreateView() $view")
+
+        // Use different layout for handheld vs TV devices
+        val layoutRes = if (isHandheldDevice) {
+            R.layout.playlist_handheld
+        } else {
+            R.layout.playlist
+        }
+
+        val view = inflater.inflate(layoutRes, container, false)
+        Log.i(TAG, "onCreateView() $view for ${if (isHandheldDevice) "handheld" else "TV"}")
 
         view.findViewById<ListView>(android.R.id.list)?.let {
             it.onItemSelectedListener = SelectListener(this)
         }
-        view.findViewById<ListView>(R.id.program_list)?.let {
-            it.adapter = ProgramAdapter(requireContext())
-            it.isEnabled = false
+
+        // Only setup program list for TV layout (has EPG)
+        if (!isHandheldDevice) {
+            view.findViewById<ListView>(R.id.program_list)?.let {
+                it.adapter = ProgramAdapter(requireContext())
+                it.isEnabled = false
+            }
         }
 
-        // Show settings button only on handheld devices
-        // TV devices should use remote MENU/SETTINGS button
-        if (!DeviceUtils.isTv(requireContext())) {
+        // Setup action buttons for handheld devices
+        if (isHandheldDevice) {
             view.findViewById<ImageButton>(R.id.settings_button)?.let { btn ->
                 btn.visibility = View.VISIBLE
                 btn.setOnClickListener {
                     (activity as? MainActivity)?.showConfig()
+                }
+            }
+
+            view.findViewById<ImageButton>(R.id.exit_button)?.let { btn ->
+                btn.setOnClickListener {
+                    (activity as? MainActivity)?.hideControls()
                 }
             }
         }
@@ -111,7 +132,13 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
     }
 
     // update program information
+    // Only used for TV layout (handheld doesn't show EPG)
     private fun updateProgram(program: Program?) {
+        if (isHandheldDevice) {
+            // Handheld layout doesn't have EPG views
+            return
+        }
+
         val name = program?.name ?: ""
         val list = program?.getRecent(10) ?: emptyList()
 

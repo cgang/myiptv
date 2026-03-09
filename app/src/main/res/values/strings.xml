@@ -38,6 +38,8 @@
     <string name="error_loading_playlist">Error loading playlist</string>
     <string name="no_channels_found">No channels found</string>
     <string name="settings">Settings</string>
+    <string name="channels">Channels</string>
+    <string name="close">Close</string>
 
     <string-array name="text_size_entries">
         <item>@string/text_size_normal</item>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Handheld device layout: Channel list only with settings and exit buttons -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#E01A1A1A">
+
+    <!-- Header with title and action buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="#FF2A2A2A">
+
+        <!-- Channel list title -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/channels"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Settings button -->
+        <ImageButton
+            android:id="@+id/settings_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_preferences"
+            android:contentDescription="@string/settings"
+            android:scaleType="centerInside"
+            android:tint="#FFFFFF" />
+
+        <!-- Exit/Close button -->
+        <ImageButton
+            android:id="@+id/exit_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:contentDescription="@string/close"
+            android:scaleType="centerInside"
+            android:tint="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- Group title (when filtered) -->
+    <TextView
+        android:id="@+id/group_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/group_background"
+        android:gravity="center"
+        android:padding="10sp"
+        android:textColor="#AAAAAA"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+    <!-- Channel list -->
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:choiceMode="singleChoice"
+        android:focusable="true"
+        android:listSelector="@drawable/list_selector"
+        android:divider="#333333"
+        android:dividerHeight="1dp" />
+
+</LinearLayout>
