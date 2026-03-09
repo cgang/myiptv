@@ -112,6 +112,10 @@ Access the settings page via the **☰ MENU** button to configure:
 - EPG source URL
 - Other playback preferences
 
+## AI Agent Documentation
+
+For AI agents working on this project, refer to [AGENTS.md](AGENTS.md) which contains links to detailed context documentation in the `context/` directory.
+
 ## License
 
 This project is released under the [MIT License](LICENSE).
