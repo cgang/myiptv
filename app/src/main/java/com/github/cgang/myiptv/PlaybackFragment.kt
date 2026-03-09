@@ -64,15 +64,18 @@ open class PlaybackFragment :
         }
 
         val playerView = view.findViewById<PlayerView>(R.id.player_view)
-        if (isTvAspectRatio()) {
-            Log.d(TAG, "TV screen aspect ratio found")
+        // Use 16:9 aspect ratio detection as a secondary signal for TV-like behavior
+        // TVs are consistently 16:9, while handheld devices have various ratios
+        if (DeviceUtils.is16by9AspectRatio(requireContext())) {
+            Log.d(TAG, "16:9 aspect ratio detected, using TV-friendly player settings")
             playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
         }
 
         return view
     }
 
-    // check aspect ratio
+    // Check aspect ratio - deprecated, use DeviceUtils.is16by9AspectRatio() instead
+    @Deprecated("Use DeviceUtils.is16by9AspectRatio()")
     private fun isTvAspectRatio(): Boolean {
         val dm = DisplayMetrics()
         @Suppress("DEPRECATION")

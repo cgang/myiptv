@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.ListFragment
@@ -42,6 +43,18 @@ class PlaylistFragment(model: PlaylistViewModel) : ListFragment() {
             it.adapter = ProgramAdapter(requireContext())
             it.isEnabled = false
         }
+
+        // Show settings button only on handheld devices
+        // TV devices should use remote MENU/SETTINGS button
+        if (!DeviceUtils.isTv(requireContext())) {
+            view.findViewById<ImageButton>(R.id.settings_button)?.let { btn ->
+                btn.visibility = View.VISIBLE
+                btn.setOnClickListener {
+                    (activity as? MainActivity)?.showConfig()
+                }
+            }
+        }
+
         return view
     }
 

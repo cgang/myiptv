@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/darker_gray" android:state_focused="true" />
-    <item android:drawable="@color/gray" android:state_pressed="true" />
-    <item android:drawable="@android:color/darker_gray" />
+    <!-- Focused state - bright blue with white border for TV D-pad navigation -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#FF3367D6"/>
+            <stroke android:width="2dp" android:color="#FFFFFFFF"/>
+            <corners android:radius="4dp"/>
+        </shape>
+    </item>
+
+    <!-- Pressed state - darker blue -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#FF1A73E8"/>
+            <corners android:radius="4dp"/>
+        </shape>
+    </item>
+
+    <!-- Default state - semi-transparent black -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#40000000"/>
+            <corners android:radius="4dp"/>
+        </shape>
+    </item>
 </selector>

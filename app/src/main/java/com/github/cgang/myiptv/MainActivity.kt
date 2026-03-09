@@ -35,8 +35,15 @@ open class MainActivity : AppCompatActivity() {
     private var channelNumberInput = StringBuilder()
     private var channelNumberTimeout: Long = 0L
 
+    /**
+     * Device type detection using robust heuristics.
+     * Cached for performance.
+     */
+    private val isTvDevice by lazy { DeviceUtils.isTv(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate()")
+        Log.d(TAG, "Device type: ${if (isTvDevice) "TV" else "Handheld"} (UI mode detection)")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
         supportFragmentManager
@@ -50,6 +57,13 @@ open class MainActivity : AppCompatActivity() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 onPreferenceChanged(0)
             }
+
+        // Pre-focus playlist for TV devices (D-pad navigation)
+        if (isTvDevice) {
+            Handler(mainLooper).postDelayed({
+                playlistFrag()?.listView?.requestFocus()
+            }, 100)
+        }
 
         viewModel.getPlayingChannel().observe(this) {
             play(it)
@@ -110,6 +124,12 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        // Only handle touch events on handheld devices
+        // TV devices should use D-pad navigation
+        if (isTvDevice) {
+            return super.onTouchEvent(event)
+        }
+
         val layout = findFrameLayout(R.id.playlist_fragment)
         if (layout.visibility == View.VISIBLE) {
             return if (event.action == MotionEvent.ACTION_UP) {
@@ -213,7 +233,11 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showConfig() {
+    /**
+     * Show settings activity.
+     * Made internal for access from PlaylistFragment.
+     */
+    internal fun showConfig() {
         val intent = Intent(this, SettingsActivity::class.java)
         changeSettings.launch(intent)
     }
@@ -276,16 +300,20 @@ open class MainActivity : AppCompatActivity() {
         // Handle Enter key for channel number input
         if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
             if (channelNumberInput.isNotEmpty()) {
-                val channelNumber = channelNumberInput.toString().toIntOrNull()
-                if (channelNumber != null) {
-                    switchToChannelByNumber(channelNumber)
+                val digit = channelNumberInput.toString().toIntOrNull()
+                if (digit != null) {
+                    switchToChannelByNumber(digit)
                 }
                 channelNumberInput.clear()
                 return true
             }
         }
 
-        if (keyCode == KeyEvent.KEYCODE_MENU) {
+        // Handle settings keycodes (MENU, SETTINGS, HELP)
+        // Support multiple remote control conventions for TV devices
+        if (keyCode == KeyEvent.KEYCODE_MENU ||
+            keyCode == KeyEvent.KEYCODE_SETTINGS ||
+            keyCode == KeyEvent.KEYCODE_HELP) {
             showConfig()
             return true
         }

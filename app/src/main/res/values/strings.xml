@@ -37,6 +37,7 @@
     <string name="loading_epg">Loading EPG…</string>
     <string name="error_loading_playlist">Error loading playlist</string>
     <string name="no_channels_found">No channels found</string>
+    <string name="settings">Settings</string>
 
     <string-array name="text_size_entries">
         <item>@string/text_size_normal</item>
