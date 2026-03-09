@@ -1,6 +1,7 @@
 package com.github.cgang.myiptv
 
 import android.app.Application
+import android.content.pm.PackageManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -29,6 +30,12 @@ class PlaylistViewModel(
     private val program = MutableLiveData<Program?>()
 
     private val downloader = Downloader(application.applicationContext)
+
+    // Check if running on TV device (for group auto-selection)
+    private val isTvDevice by lazy {
+        application.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
+        application.packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+    }
 
     // Loading state
     private val _isLoading = MutableLiveData<Boolean>()
@@ -144,7 +151,8 @@ class PlaylistViewModel(
         synchronized(this) {
             this.channels.set(channels.toList())
             this.groups = newGroups.toList()
-            if (currentGroup == "" && groups.isNotEmpty()) {
+            // Only auto-select first group on TV devices, not handheld
+            if (isTvDevice && currentGroup == "" && groups.isNotEmpty()) {
                 currentGroup = groups[0]
             }
         }

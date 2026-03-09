@@ -35,6 +35,9 @@
     <string name="loading_epg">正在加载 EPG…</string>
     <string name="error_loading_playlist">加载播放列表失败</string>
     <string name="no_channels_found">未找到频道</string>
+    <string name="settings">设置</string>
+    <string name="channels">频道</string>
+    <string name="close">关闭</string>
 
     <string-array name="text_size_entries">
         <item>@string/text_size_normal</item>

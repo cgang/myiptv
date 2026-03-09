@@ -26,10 +26,10 @@ class HandheldPlaylistFragment : BasePlaylistFragment() {
             }
         }
 
-        // Setup exit/close button
+        // Setup exit/close button - exit the app
         view.findViewById<ImageButton>(R.id.exit_button)?.let { btn ->
             btn.setOnClickListener {
-                (activity as? MainActivity)?.hideControls()
+                activity?.finish()
             }
         }
     }

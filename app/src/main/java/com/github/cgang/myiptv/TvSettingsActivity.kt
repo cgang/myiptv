@@ -2,28 +2,29 @@ package com.github.cgang.myiptv
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 
 /**
- * Settings activity for configuring app preferences.
- *
- * On handheld devices, shows with action bar and back navigation.
- * On TV devices, shows fullscreen without action bar.
+ * Settings activity for TV devices with fullscreen UI.
  */
-class SettingsActivity : AppCompatActivity() {
+class TvSettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Use different theme for handheld vs TV
-        if (!DeviceUtils.isTv(this)) {
-            // Handheld: show with action bar and back navigation
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.title = getString(R.string.settings)
-        }
+        // Fullscreen for TV
+        window.decorView.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        )
+
+        setContentView(R.layout.activity_settings)
 
         supportFragmentManager
             .beginTransaction()
-            .replace(android.R.id.content, SettingsFragment())
+            .replace(R.id.settings_container, SettingsFragment())
             .commit()
     }
 

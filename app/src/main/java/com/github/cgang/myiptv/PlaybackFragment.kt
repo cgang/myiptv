@@ -257,15 +257,34 @@ open class PlaybackFragment :
         val playerView = view?.findViewById<PlayerView>(R.id.player_view)
         playerView?.player = exoPlayer
 
+        // Try to resume last URL, or observe playlist for when channels become available
         val current = lastUrl
         if (!current.isNullOrEmpty()) {
             Log.i(TAG, "Trying to play last URL: $current")
-            val channel = viewModel.getChannelByUrl(current)
-            if (channel != null) {
-                preparePlay(channel)
-            }
+            tryResumeLastUrl(current)
         } else {
             Log.d(TAG, "last URL is empty")
+        }
+    }
+
+    private fun tryResumeLastUrl(url: String) {
+        // First try immediately
+        var channel = viewModel.getChannelByUrl(url)
+        if (channel != null) {
+            Log.i(TAG, "Channel found immediately, resuming: $url")
+            preparePlay(channel)
+            return
+        }
+
+        // If channels not loaded yet, observe playlist
+        Log.d(TAG, "Channels not loaded yet, observing playlist")
+        viewModel.getPlaylist().observe(viewLifecycleOwner) { playlist ->
+            Log.d(TAG, "Playlist updated, channels count: ${playlist?.channels?.size ?: 0}")
+            val foundChannel = viewModel.getChannelByUrl(url)
+            if (foundChannel != null) {
+                Log.i(TAG, "Channels loaded, resuming last URL: $url")
+                preparePlay(foundChannel)
+            }
         }
     }
 

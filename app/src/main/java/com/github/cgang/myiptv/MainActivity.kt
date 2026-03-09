@@ -2,6 +2,7 @@ package com.github.cgang.myiptv
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -63,6 +64,10 @@ open class MainActivity : AppCompatActivity() {
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
         changeSettings =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                // Clear group filter when returning from settings on handheld
+                if (!isTvDevice) {
+                    viewModel.setGroup("")
+                }
                 onPreferenceChanged(0)
             }
 
@@ -246,7 +251,13 @@ open class MainActivity : AppCompatActivity() {
      * Made internal for access from PlaylistFragment.
      */
     internal fun showConfig() {
-        val intent = Intent(this, SettingsActivity::class.java)
+        val isTv = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEVISION)
+            || packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+        val intent = if (isTv) {
+            Intent(this, TvSettingsActivity::class.java)
+        } else {
+            Intent(this, HandheldSettingsActivity::class.java)
+        }
         changeSettings.launch(intent)
     }
 
