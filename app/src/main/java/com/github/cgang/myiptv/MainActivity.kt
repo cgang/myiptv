@@ -221,10 +221,9 @@ open class MainActivity : AppCompatActivity() {
     private fun onPreferenceChanged(maxAge: Int) {
         val defaultPlaylistUrl = resources.getString(R.string.default_playlist_url)
         preferences.getString(PLAYLIST_URL, defaultPlaylistUrl)?.let {
-            if (lastPlaylistUrl != it) {
-                viewModel.downloadPlaylist(it, maxAge)
-                lastPlaylistUrl = it
-            }
+            // Always re-download playlist to detect changes (cache is disabled for playlists)
+            viewModel.downloadPlaylist(it, maxAge)
+            lastPlaylistUrl = it
         }
 
         preferences.getString(EPG_URL, null)?.let {
@@ -426,7 +425,7 @@ open class MainActivity : AppCompatActivity() {
         const val PREV = -1
         const val NEXT = 1
         const val PROGRAM_INFO_TTL = 5 * 1000L // milliseconds
-        const val DEFAULT_MAX_AGE = 12
+        const val DEFAULT_MAX_AGE = 1
         const val CHANNEL_NUMBER_TIMEOUT_MS = 3000L // 3 seconds timeout for channel number input
     }
 }

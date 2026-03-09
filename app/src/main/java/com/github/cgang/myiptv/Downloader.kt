@@ -68,7 +68,8 @@ class Downloader(val context: Context) {
 
     fun downloadPlaylist(urlStr: String, maxAge: Int) {
         handler.post {
-            download(urlStr, maxAge) { inputStream ->
+            // Always fetch fresh playlist (no cache) to detect changes quickly
+            download(urlStr, 0) { inputStream ->
                 // Parse as M3U
                 val parser = M3UParser()
                 parser.parse(InputStreamReader(inputStream))
