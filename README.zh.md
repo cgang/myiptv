@@ -102,6 +102,7 @@ rtsp://server.example.com/stream.smil
 
 - ❌ 不支持数字键直接选台
 - ⚠️ 组播功能仍处于实验阶段
+- 📱 手持设备支持有限 - 主要针对 Android TV 优化
 
 ## 配置选项
 

@@ -102,6 +102,7 @@ Configure an optional EPG URL pointing to an XMLTV file:
 
 - ❌ No channel selection by number input
 - ⚠️ Multicast support is experimental
+- 📱 Limited handheld device support - optimized primarily for Android TV
 
 ## Configuration
 
