@@ -161,7 +161,6 @@ open class MainActivity : AppCompatActivity() {
         }
 
         return if (event.action == MotionEvent.ACTION_UP) {
-            viewModel.setGroup("") // disable group
             layout.visibility = View.VISIBLE
             showControls()
             true
